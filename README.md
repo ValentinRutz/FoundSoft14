@@ -6,9 +6,9 @@ at EPFL.
 
 Members of the team
 -------------------
-Damien Engels (paullepoulpe)
-Valentin Rutz (ValentinRutz)
-Valerian Pittet (????)
+- Damien Engels (paullepoulpe)
+- Valentin Rutz (ValentinRutz)
+- Valerian Pittet (????)
 
 Useful Sbt Commands
 -------------------
