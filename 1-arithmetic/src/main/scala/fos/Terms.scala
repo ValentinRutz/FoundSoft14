@@ -5,31 +5,10 @@ import scala.util.parsing.input.Positional
 /** Abstract Syntax Trees for terms. */
 abstract class Term extends Positional
 
-  //   ... To complete ... 
-case object True extends Term {
-  override def toString() = "true"
-}
-
-case object False extends Term {
-  override def toString() = "false"
-}
-
-case class If(cond: Term, zen: Term, elz: Term) extends Term {
-  override def toString() = "if "+ cond +" then "+ zen +" else "+ elz
-}
-
-case object Zero extends Term {
-  override def toString() = "0"
-}
-
-case class Succ(t: Term) extends Term {
-  override def toString() = "succ "+ t
-}
-
-case class Pred(t: Term) extends Term {
-  override def toString() = "pred "+ t
-}
-
-case class IsZero(t: Term) extends Term {
-  override def toString() = "iszero "+ t
-}
+object True extends Term
+object False extends Term
+object Zero extends Term
+case class If(cond: Term, thn: Term, elz: Term) extends Term
+case class Succ(t: Term) extends Term
+case class Pred(t: Term) extends Term
+case class IsZero(t: Term) extends Term

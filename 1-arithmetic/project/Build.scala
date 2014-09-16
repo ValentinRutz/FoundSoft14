@@ -10,7 +10,8 @@ object ExerciseBuild extends Build {
     name         := "fos-project1",
     version      := "1.0",
     scalaVersion := "2.10.2",
-    scalacOptions ++= List("-unchecked", "-deprecation"))
+    scalacOptions ++= List("-unchecked", "-deprecation"),
+    libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.0" % "test")
 
   val filesToInclude = Seq("src/main/scala/fos/Arithmetic.scala", "src/main/scala/fos/Terms.scala")
 
