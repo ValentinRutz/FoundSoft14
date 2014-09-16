@@ -62,8 +62,26 @@ object ExerciseBuild extends Build {
   }
 
   def scalariformConfig = SbtScalariform.scalariformSettings ++ Seq(
-    ScalariformKeys.preferences := FormattingPreferences().
-      setPreference(AlignParameters, true)
+    ScalariformKeys.preferences := FormattingPreferences()
+        .setPreference(AlignParameters, true)
+        .setPreference(AlignSingleLineCaseStatements, false)
+        .setPreference(CompactControlReadability, false)
+        .setPreference(CompactStringConcatenation, false)
+        .setPreference(DoubleIndentClassDeclaration, true)
+        .setPreference(FormatXml, true)
+        .setPreference(IndentLocalDefs, false)
+        .setPreference(IndentPackageBlocks, true)
+        .setPreference(IndentSpaces, 4)
+        .setPreference(IndentWithTabs, false)
+        .setPreference(MultilineScaladocCommentsStartOnFirstLine, false)
+        .setPreference(PreserveDanglingCloseParenthesis, false)
+        .setPreference(PlaceScaladocAsterisksBeneathSecondAsterisk, true)
+        .setPreference(PreserveSpaceBeforeArguments, false)
+        .setPreference(RewriteArrowSymbols, false)
+        .setPreference(SpaceBeforeColon, false)
+        .setPreference(SpaceInsideBrackets, false)
+        .setPreference(SpaceInsideParentheses, false)
+        .setPreference(SpacesWithinPatternBinders, true)
   )
 
 }
