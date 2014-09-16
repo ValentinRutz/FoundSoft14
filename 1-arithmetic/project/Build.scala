@@ -2,6 +2,9 @@ import sbt._
 import Keys._
 
 import java.io.File
+import com.typesafe.sbt.SbtScalariform
+import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+import scalariform.formatter.preferences._
 
 object ExerciseBuild extends Build {
 
@@ -31,8 +34,7 @@ object ExerciseBuild extends Build {
     }
   }
 
-  lazy val root = Project("fos-project1", file(".")).settings((exerciseSettings ++ Seq(packageToMoodleTask)):_*)
-
+  lazy val root = Project("fos-project1", file(".")).settings((exerciseSettings ++ Seq(packageToMoodleTask) ++ scalariformConfig):_*)
 
   private def gatherSources(out: File, po: Seq[PackageOption], cacheDir: File, log: Logger): File = {
     val packagePrefix = "src/foo"
@@ -59,6 +61,9 @@ object ExerciseBuild extends Build {
 
   }
 
-
+  def scalariformConfig = SbtScalariform.scalariformSettings ++ Seq(
+    ScalariformKeys.preferences := FormattingPreferences().
+      setPreference(AlignParameters, true)
+  )
 
 }
