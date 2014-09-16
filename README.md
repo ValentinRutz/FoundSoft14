@@ -15,12 +15,12 @@ Useful Sbt Commands
 
 Generate intellij configuration files
 ```shell
-gen-idea
+sbt> gen-idea
 ```
 
 Autocompile and launch tests on file change
 ```shell
-~ ;compile ;test
+sbt> ~ ;compile ;test
 ```
 
 
