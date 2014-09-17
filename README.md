@@ -18,9 +18,14 @@ Generate intellij configuration files
 sbt> gen-idea
 ```
 
-Autocompile and launch tests on file change
+Autocompile and launch tests on file changes
 ```shell
 sbt> ~ ;compile ;test
+```
+
+Create jar file for submission (submission\*\*\*.jar)
+```shell
+sbt> package-for-submission Engels Rutz Pittet
 ```
 
 
