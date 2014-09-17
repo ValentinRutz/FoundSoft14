@@ -10,6 +10,12 @@ class TestParser extends FunSuite {
         assert(test(input, output))
     }
 
+    test("Example with succ") {
+        val input = "if iszero pred pred succ 1 then if iszero 0 then true else false else false"
+        val output = If(IsZero(Pred(Pred(Succ(Succ(Zero))))), If(IsZero(Zero), True, False), False)
+        assert(test(input, output))
+    }
+
     def test(str: String, ast: Term): Boolean = {
         val tokens = new lexical.Scanner(str)
         phrase(Expr)(tokens) match {

@@ -29,9 +29,9 @@ object Arithmetic extends StandardTokenParsers {
         | "false" ^^^ False
         | "0" ^^^ Zero
         | ("if" ~> Expr) ~ ("then" ~> Expr) ~ ("else" ~> Expr) ^^ { case c ~ t ~ e => If(c, t, e) }
-        | "succ" ~> Expr ^^ Succ.apply _
-        | "pred" ~> Expr ^^ Pred.apply _
-        | "iszero" ~> Expr ^^ IsZero.apply _
+        | "succ" ~> Expr ^^ Succ
+        | "pred" ~> Expr ^^ Pred
+        | "iszero" ~> Expr ^^ IsZero
         | numericLit ^^ {
             case e => {
                 @tailrec def reduce(e: Int, acc: Term): Term = {

@@ -12,7 +12,7 @@ object ExerciseBuild extends Build {
     organization := "fos",
     name         := "fos-project1",
     version      := "1.0",
-    scalaVersion := "2.10.2",
+    scalaVersion := "2.10.4",
     scalacOptions ++= List("-unchecked", "-deprecation"),
     libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.0" % "test")
 
