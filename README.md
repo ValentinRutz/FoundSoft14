@@ -8,7 +8,7 @@ Members of the team
 -------------------
 - Damien Engels (paullepoulpe)
 - Valentin Rutz (ValentinRutz)
-- Valerian Pittet (????)
+- Valerian Pittet (vtpittet)
 
 Useful Sbt Commands
 -------------------
