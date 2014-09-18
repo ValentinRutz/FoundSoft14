@@ -3,6 +3,7 @@ package fos
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.input._
 import scala.annotation.tailrec
+import java.lang.IllegalArgumentException
 
 /**
   * This object implements a parser and evaluator for the NB
@@ -44,10 +45,28 @@ object Arithmetic extends StandardTokenParsers {
         }
         | failure("illegal start of expression"))
 
+    def oneStepEvaluator(t: Term): Term =
+        t match {
+            case IsZero(Zero) => True
+            case IsZero(Succ(_)) => False
+            case IsZero(s) => IsZero(oneStepEvaluator(s))
+            case Succ(s) => Succ(oneStepEvaluator(s))
+            case Pred(Succ(s)) => s
+            case Pred(Zero) => Zero
+            case Pred(s) => Pred(oneStepEvaluator(s))
+            case If(True, t, e) => t
+            case If(False, t, e) => e
+            case If(c, t, e) => If(oneStepEvaluator(c), t, e)
+            case s @ (True | False | Zero) => s
+            case error => throw new IllegalArgumentException("Unexpected expression: " + error)
+        }
+
     def main(args: Array[String]): Unit = {
         val tokens = new lexical.Scanner(StreamReader(new java.io.InputStreamReader(System.in)))
         phrase(Expr)(tokens) match {
-            case Success(trees, _) => println(trees)
+            case Success(trees, _) =>
+                println(trees)
+                println(oneStepEvaluator(trees))
             case e =>
                 println(e)
         }
