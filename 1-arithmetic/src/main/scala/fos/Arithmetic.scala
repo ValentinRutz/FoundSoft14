@@ -68,6 +68,42 @@ object Arithmetic extends StandardTokenParsers {
             case Succ(t) => isNumericValue(t)
             case _ => false
         }
+    
+    def eval(tree: Term): Term = {
+        def error(stuckTerm: Term, tree: Term) = stuckTerm match {
+            case st: StuckTerm => st
+            case st => StuckTerm(tree)
+        }
+        tree match {
+            // B-VALUE
+            case v: Terminal => v
+            // B-IFTRUE, B-IFFALSE
+            case If(c, t, e) => eval(c) match {
+                case True => eval(t)
+                case False => eval(e)
+                case stuckTerm => error(stuckTerm, tree)
+            }
+            // B-SUCC
+            case Succ(t) => eval(t) match {
+                case nv if (isNumericValue(nv)) => nv
+                case stuckTerm => error(stuckTerm, tree)
+            }
+            // B-PREDZERO, B-PREDSUCC
+            case Pred(t) => eval(t) match {
+                case Zero => Zero
+                case Succ(nv) if (isNumericValue(nv)) => nv
+                case stuckTerm => error(stuckTerm, tree)
+            }
+            // B-ISZEROZERO, B-ISZEROSUCC
+            case IsZero(t) => eval(t) match {
+                case Zero => True
+                case Succ(nv) if (isNumericValue(nv)) => False
+                case stuckTerm => error(stuckTerm, tree)
+            }
+            // never reached
+            case stuckTerm => stuckTerm
+        }
+    }
 
     def main(args: Array[String]): Unit = {
         val tokens = new lexical.Scanner(StreamReader(new java.io.InputStreamReader(System.in)))
