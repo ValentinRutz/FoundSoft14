@@ -12,9 +12,9 @@ class TestOneStep extends FunSuite {
         assert(oneStepEvaluator(input) == output)
     }
 
-    test("Bad example with Big Step") {
+    test("Bad example with One Step") {
         val input = Pred(Succ(Succ(Succ(False))))
-        val output = Succ(Succ(False))
+        val output = Pred(Succ(Succ(Succ(False))))
         assert(oneStepEvaluator(input) == output)
     }
 }
