@@ -16,6 +16,8 @@ object Arithmetic extends StandardTokenParsers {
     import lexical.NumericLit
 
     /**
+      * Parser for the NB language defined by the grammar below
+      *
       * Expr ::= 'true'
       *  	| 'false'
       *  	| 'if' Expr 'then' Expr 'else' Expr
@@ -24,7 +26,6 @@ object Arithmetic extends StandardTokenParsers {
       *  	| 'pred' Expr
       *  	| 'iszero' Expr
       */
-
     def Expr: Parser[Term] = (
         "true" ^^^ True
         | "false" ^^^ False
@@ -45,18 +46,24 @@ object Arithmetic extends StandardTokenParsers {
         }
         | failure("illegal start of expression"))
 
-    def oneStepEvaluator(t: Term): Term =
+    /**
+      * "one step" evaluator
+      *
+      * @param t The term to reduce
+      * @return The result of one step of the evaluation
+      */
+    def reduce(t: Term): Term =
         t match {
             case IsZero(Zero) => True
             case IsZero(Succ(nv)) if (isNumericValue(nv)) => False
-            case IsZero(s) => IsZero(oneStepEvaluator(s))
-            case Succ(s) => Succ(oneStepEvaluator(s))
+            case IsZero(s) => IsZero(reduce(s))
+            case Succ(s) => Succ(reduce(s))
             case Pred(Succ(nv)) if (isNumericValue(nv)) => nv
             case Pred(Zero) => Zero
-            case Pred(s) => Pred(oneStepEvaluator(s))
+            case Pred(s) => Pred(reduce(s))
             case If(True, t, e) => t
             case If(False, t, e) => e
-            case If(c, t, e) => If(oneStepEvaluator(c), t, e)
+            case If(c, t, e) => If(reduce(c), t, e)
             case s @ (True | False | Zero) => s
             case error => throw new IllegalArgumentException("Unexpected expression: " + error)
         }
@@ -68,7 +75,13 @@ object Arithmetic extends StandardTokenParsers {
             case Succ(t) => isNumericValue(t)
             case _ => false
         }
-    
+
+    /**
+      * "big step" evaluator
+      *
+      * @param tree the term to evaluate
+      * @return  the result of the evaluator
+      */
     def eval(tree: Term): Term = {
         def error(stuckTerm: Term, tree: Term) = stuckTerm match {
             case st: StuckTerm => st
@@ -110,10 +123,10 @@ object Arithmetic extends StandardTokenParsers {
         phrase(Expr)(tokens) match {
             case Success(trees, _) => {
                 println(trees)
-        
+
                 // small step
                 smallStepPrint(trees)
-        
+
                 // big step
                 bigStepPrint(trees)
             }
@@ -127,7 +140,7 @@ object Arithmetic extends StandardTokenParsers {
          * Stops when reduction fixpoint reached and prints error if the result is not a terminal
          */
         def smallStepPrint(tree: Term): Unit = {
-            val reduced = oneStepEvaluator(tree)
+            val reduced = reduce(tree)
             if (reduced == tree) tree match {
                 case t: Terminal => // already printed in previous call
                 case stuckTerm => println("Stuck term : " + stuckTerm)
