@@ -43,21 +43,27 @@ object Arithmetic extends StandardTokenParsers {
       * @param t The term to reduce
       * @return The result of one step of the evaluation
       */
-    def reduce(t: Term): Term =
-        t match {
-            case IsZero(Zero) => True
-            case IsZero(Succ(nv)) if (isNumericValue(nv)) => False
-            case IsZero(s) => IsZero(reduce(s))
-            case Succ(s) => Succ(reduce(s))
-            case Pred(Succ(nv)) if (isNumericValue(nv)) => nv
-            case Pred(Zero) => Zero
-            case Pred(s) => Pred(reduce(s))
-            case If(True, t, e) => t
-            case If(False, t, e) => e
-            case If(c, t, e) => If(reduce(c), t, e)
-            case s @ (True | False | Zero) => s
-            case error => throw new IllegalArgumentException("Unexpected expression: " + error)
-        }
+    def reduce(t: Term): Term = t match {
+        /* Computation */
+        case If(True, t, e) => t
+        case If(False, t, e) => e
+        case IsZero(Zero) => True
+        case IsZero(Succ(nv)) if (isNumericValue(nv)) => False
+        case Pred(Zero) => Zero
+        case Pred(Succ(nv)) if (isNumericValue(nv)) => nv
+
+        /* Congruence */
+        case If(c, t, e) => If(reduce(c), t, e)
+        case IsZero(s) => IsZero(reduce(s))
+        case Pred(s) => Pred(reduce(s))
+        case Succ(s) => Succ(reduce(s))
+
+        /* Values */
+        case s @ (True | False | Zero) => s
+
+        /* Error */
+        case error => throw new IllegalArgumentException("Unexpected expression: " + error)
+    }
 
     def isNumericValue(tree: Term): Boolean =
         tree match {
