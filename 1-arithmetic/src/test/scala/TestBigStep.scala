@@ -16,6 +16,11 @@ class TestBigStep extends FunSuite with Matchers {
     test("Example 2 from lab statement") {
         val input = Pred(Succ(Succ(Succ(False))))
         val output = Succ(False)
-        eval(input) should be(output)
+
+        val StuckTermException(term) = intercept[StuckTermException] {
+            eval(input)
+        }
+
+        assert(term == output)
     }
 }

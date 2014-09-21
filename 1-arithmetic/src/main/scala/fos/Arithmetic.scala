@@ -4,6 +4,7 @@ import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.input._
 import scala.annotation.tailrec
 import java.lang.IllegalArgumentException
+import Pipeline._
 
 /**
   * This object implements a parser and evaluator for the NB
@@ -14,6 +15,9 @@ object Arithmetic extends StandardTokenParsers {
     lexical.reserved ++= List("true", "false", "0", "if", "then", "else", "succ", "pred", "iszero")
 
     import lexical.NumericLit
+
+    /** Simple exception for terms that cannot be evaluated */
+    case class StuckTermException(tree: Term) extends Throwable
 
     /**
       * Parser for the NB language defined by the grammar below
@@ -48,9 +52,9 @@ object Arithmetic extends StandardTokenParsers {
         case If(True, t, e) => t
         case If(False, t, e) => e
         case IsZero(Zero) => True
-        case IsZero(Succ(nv)) if nv.isNumericValue => False
+        case IsZero(Succ(nv)) if nv.isNumeric => False
         case Pred(Zero) => Zero
-        case Pred(Succ(nv)) if nv.isNumericValue => nv
+        case Pred(Succ(nv)) if nv.isNumeric => nv
 
         /* Congruence */
         case If(c, t, e) => If(reduce(c), t, e)
@@ -71,45 +75,37 @@ object Arithmetic extends StandardTokenParsers {
       * @param tree the term to evaluate
       * @return  the result of the evaluator
       */
-    def eval(tree: Term): Term = {
-        def error(stuckTerm: Term, tree: Term) = stuckTerm match {
-            case st: StuckTerm => st
-            case st => StuckTerm(tree)
+    def eval(tree: Term): Term = tree match {
+        /* B-VALUE */
+        case v if v.isValue => v
+
+        /* B-IFTRUE, B-IFFALSE */
+        case If(c, t, e) => eval(c) match {
+            case True => eval(t)
+            case False => eval(e)
+            case _ => throw new StuckTermException(tree)
         }
-        tree match {
-            // B-VALUE
-            case v if v.isValue => v
 
-            // B-IFTRUE, B-IFFALSE
-            case If(c, t, e) => eval(c) match {
-                case True => eval(t)
-                case False => eval(e)
-                case stuckTerm => error(stuckTerm, tree)
-            }
-
-            // B-SUCC
-            case Succ(t) => eval(t) match {
-                case nv if nv.isNumericValue => Succ(nv)
-                case stuckTerm => error(stuckTerm, tree)
-            }
-
-            // B-PREDZERO, B-PREDSUCC
-            case Pred(t) => eval(t) match {
-                case Zero => Zero
-                case Succ(nv) if nv.isNumericValue => nv
-                case stuckTerm => error(stuckTerm, tree)
-            }
-
-            // B-ISZEROZERO, B-ISZEROSUCC
-            case IsZero(t) => eval(t) match {
-                case Zero => True
-                case Succ(nv) if nv.isNumericValue => False
-                case stuckTerm => error(stuckTerm, tree)
-            }
-
-            // never reached
-            case stuckTerm => stuckTerm
+        /* B-SUCC */
+        case Succ(t) => eval(t) match {
+            case nv if nv.isNumeric => Succ(nv)
+            case _ => throw new StuckTermException(tree)
         }
+
+        /* B-PREDZERO, B-PREDSUCC */
+        case Pred(t) => eval(t) match {
+            case Zero => Zero
+            case Succ(nv) if nv.isNumeric => nv
+            case _ => throw new StuckTermException(tree)
+        }
+
+        /* B-ISZEROZERO, B-ISZEROSUCC */
+        case IsZero(t) => eval(t) match {
+            case Zero => True
+            case Succ(nv) if nv.isNumeric => False
+            case _ => throw new StuckTermException(tree)
+        }
+
     }
 
     def main(args: Array[String]): Unit = {
@@ -128,29 +124,32 @@ object Arithmetic extends StandardTokenParsers {
                 println(e)
             }
         }
+    }
 
-        /*
-         * Recursively reduces and prints intermediate result
-         * Stops when reduction fixpoint reached and prints error if the result is not a terminal
-         */
-        def smallStepPrint(tree: Term): Unit = {
-            val reduced = reduce(tree)
-            if (reduced == tree) tree match {
-                case v if v.isValue => // already printed in previous call
-                case stuckTerm => println("Stuck term : " + stuckTerm)
-            }
-            else {
-                println(reduced)
-                smallStepPrint(reduced)
-            }
-        }
+    /** Basic pipeline for printing the term going through */
+    def printTerm: Pipeline[Term, Term] = (term: Term) => {
+        println(term)
+        term
+    }
 
-        def bigStepPrint(tree: Term): Unit = {
-            print("Big step : ")
-            eval(tree) match {
-                case StuckTerm(stuckTerm) => println("Stuck term : " + stuckTerm)
-                case term => println(term)
-            }
+    /*
+   * Recursively reduces and prints intermediate result
+   * Stops when reduction fixpoint reached and prints error if the result is not a terminal
+   */
+    def smallStepPrint(tree: Term): Unit = {
+        val stepPipe = printTerm | Pipeline(reduce)
+        val pipe = repeatWhile(stepPipe, (a: Term, b: Term) => a != b)
+
+        val res = pipe.run(tree)
+        if (!res.isValue) println(s"Stuck term: $res")
+    }
+
+    def bigStepPrint(tree: Term): Unit = {
+        try {
+            val res = Pipeline(eval).run(tree)
+            println(s"Big step: $res")
+        } catch {
+            case StuckTermException(term) => println(s"Big step: Stuck term: $term")
         }
     }
 }
