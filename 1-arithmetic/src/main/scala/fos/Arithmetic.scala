@@ -108,11 +108,41 @@ object Arithmetic extends StandardTokenParsers {
     def main(args: Array[String]): Unit = {
         val tokens = new lexical.Scanner(StreamReader(new java.io.InputStreamReader(System.in)))
         phrase(Expr)(tokens) match {
-            case Success(trees, _) =>
+            case Success(trees, _) => {
                 println(trees)
-                println(oneStepEvaluator(trees))
-            case e =>
+        
+                // small step
+                smallStepPrint(trees)
+        
+                // big step
+                bigStepPrint(trees)
+            }
+            case e => {
                 println(e)
+            }
+        }
+        
+        /*
+         * Recursively reduces and prints intermediate result
+         * Stops when reduction fixpoint reached and prints error if the result is not a terminal
+         */
+        def smallStepPrint(tree: Term): Unit = {
+            val reduced = oneStepEvaluator(tree)
+            if (reduced == tree) tree match {
+                case t: Terminal => // already printed in previous call
+                case stuckTerm => println("Stuck term : " + stuckTerm)
+            } else {
+                println(reduced)
+                smallStepPrint(reduced)
+            }
+        }
+        
+        def bigStepPrint(tree: Term): Unit = {
+            print("Big step : ")
+            eval(tree) match {
+                case StuckTerm(stuckTerm) => println("Stuck term : " + stuckTerm)
+                case term => println(term)
+            }
         }
     }
 }
