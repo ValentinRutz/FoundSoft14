@@ -6,15 +6,11 @@ import scala.util.parsing.input.Positional
 abstract class Term extends Positional
 
 abstract class Terminal extends Term
-object True extends Terminal {
-    override def toString = "True"
-}
-object False extends Terminal {
-    override def toString = "False"
-}
-object Zero extends Terminal {
-    override def toString = "Zero"
-}
+
+case object True extends Terminal
+case object False extends Terminal
+case object Zero extends Terminal
+
 case class If(cond: Term, thn: Term, elz: Term) extends Term
 case class Succ(t: Term) extends Term
 case class Pred(t: Term) extends Term
