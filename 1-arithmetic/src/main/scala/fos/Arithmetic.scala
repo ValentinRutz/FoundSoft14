@@ -40,17 +40,17 @@ object Arithmetic extends StandardTokenParsers {
     /**
       * "one step" evaluator
       *
-      * @param t The term to reduce
+      * @param tree The term to reduce
       * @return The result of one step of the evaluation
       */
-    def reduce(t: Term): Term = t match {
+    def reduce(tree: Term): Term = tree match {
         /* Computation */
         case If(True, t, e) => t
         case If(False, t, e) => e
         case IsZero(Zero) => True
-        case IsZero(Succ(nv)) if (isNumericValue(nv)) => False
+        case IsZero(Succ(nv)) if nv.isNumericValue => False
         case Pred(Zero) => Zero
-        case Pred(Succ(nv)) if (isNumericValue(nv)) => nv
+        case Pred(Succ(nv)) if nv.isNumericValue => nv
 
         /* Congruence */
         case If(c, t, e) => If(reduce(c), t, e)
@@ -59,19 +59,11 @@ object Arithmetic extends StandardTokenParsers {
         case Succ(s) => Succ(reduce(s))
 
         /* Values */
-        case s @ (True | False | Zero) => s
+        case v if v.isValue => v
 
         /* Error */
         case error => throw new IllegalArgumentException("Unexpected expression: " + error)
     }
-
-    def isNumericValue(tree: Term): Boolean =
-        tree match {
-            case Zero => true
-            case Pred(t) => isNumericValue(t)
-            case Succ(t) => isNumericValue(t)
-            case _ => false
-        }
 
     /**
       * "big step" evaluator
@@ -86,30 +78,35 @@ object Arithmetic extends StandardTokenParsers {
         }
         tree match {
             // B-VALUE
-            case v: Terminal => v
+            case v if v.isValue => v
+
             // B-IFTRUE, B-IFFALSE
             case If(c, t, e) => eval(c) match {
                 case True => eval(t)
                 case False => eval(e)
                 case stuckTerm => error(stuckTerm, tree)
             }
+
             // B-SUCC
             case Succ(t) => eval(t) match {
-                case nv if (isNumericValue(nv)) => nv
+                case nv if nv.isNumericValue => Succ(nv)
                 case stuckTerm => error(stuckTerm, tree)
             }
+
             // B-PREDZERO, B-PREDSUCC
             case Pred(t) => eval(t) match {
                 case Zero => Zero
-                case Succ(nv) if (isNumericValue(nv)) => nv
+                case Succ(nv) if nv.isNumericValue => nv
                 case stuckTerm => error(stuckTerm, tree)
             }
+
             // B-ISZEROZERO, B-ISZEROSUCC
             case IsZero(t) => eval(t) match {
                 case Zero => True
-                case Succ(nv) if (isNumericValue(nv)) => False
+                case Succ(nv) if nv.isNumericValue => False
                 case stuckTerm => error(stuckTerm, tree)
             }
+
             // never reached
             case stuckTerm => stuckTerm
         }
@@ -139,9 +136,10 @@ object Arithmetic extends StandardTokenParsers {
         def smallStepPrint(tree: Term): Unit = {
             val reduced = reduce(tree)
             if (reduced == tree) tree match {
-                case t: Terminal => // already printed in previous call
+                case v if v.isValue => // already printed in previous call
                 case stuckTerm => println("Stuck term : " + stuckTerm)
-            } else {
+            }
+            else {
                 println(reduced)
                 smallStepPrint(reduced)
             }
