@@ -34,16 +34,7 @@ object Arithmetic extends StandardTokenParsers {
         | "succ" ~> Expr ^^ Succ
         | "pred" ~> Expr ^^ Pred
         | "iszero" ~> Expr ^^ IsZero
-        | numericLit ^^ {
-            case e => {
-                @tailrec def reduce(e: Int, acc: Term): Term = {
-                    if (e == 0) return acc
-                    reduce(e - 1, Succ(acc))
-                }
-
-                reduce(e.toInt, Zero)
-            }
-        }
+        | numericLit ^^ { case e => Iterator.iterate[Term](Zero)(Succ).drop(e.toInt).next }
         | failure("illegal start of expression"))
 
     /**
@@ -134,7 +125,7 @@ object Arithmetic extends StandardTokenParsers {
                 println(e)
             }
         }
-        
+
         /*
          * Recursively reduces and prints intermediate result
          * Stops when reduction fixpoint reached and prints error if the result is not a terminal
@@ -149,7 +140,7 @@ object Arithmetic extends StandardTokenParsers {
                 smallStepPrint(reduced)
             }
         }
-        
+
         def bigStepPrint(tree: Term): Unit = {
             print("Big step : ")
             eval(tree) match {
