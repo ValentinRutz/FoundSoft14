@@ -48,10 +48,10 @@ object Arithmetic extends StandardTokenParsers {
     def oneStepEvaluator(t: Term): Term =
         t match {
             case IsZero(Zero) => True
-            case IsZero(Succ(_)) => False
+            case IsZero(Succ(nv)) if (isNumericValue(nv)) => False
             case IsZero(s) => IsZero(oneStepEvaluator(s))
             case Succ(s) => Succ(oneStepEvaluator(s))
-            case Pred(Succ(s)) => s
+            case Pred(Succ(nv)) if (isNumericValue(nv)) => nv
             case Pred(Zero) => Zero
             case Pred(s) => Pred(oneStepEvaluator(s))
             case If(True, t, e) => t
@@ -59,6 +59,14 @@ object Arithmetic extends StandardTokenParsers {
             case If(c, t, e) => If(oneStepEvaluator(c), t, e)
             case s @ (True | False | Zero) => s
             case error => throw new IllegalArgumentException("Unexpected expression: " + error)
+        }
+
+    def isNumericValue(tree: Term): Boolean =
+        tree match {
+            case Zero => true
+            case Pred(t) => isNumericValue(t)
+            case Succ(t) => isNumericValue(t)
+            case _ => false
         }
 
     def main(args: Array[String]): Unit = {
