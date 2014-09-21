@@ -15,3 +15,5 @@ case class If(cond: Term, thn: Term, elz: Term) extends Term
 case class Succ(t: Term) extends Term
 case class Pred(t: Term) extends Term
 case class IsZero(t: Term) extends Term
+
+case class StuckTerm(t: Term) extends Term
