@@ -106,6 +106,8 @@ object Arithmetic extends StandardTokenParsers {
             case _ => throw new StuckTermException(tree)
         }
 
+        /* Error */
+        case error => throw new IllegalArgumentException("Unexpected expression: " + error)
     }
 
     def main(args: Array[String]): Unit = {
