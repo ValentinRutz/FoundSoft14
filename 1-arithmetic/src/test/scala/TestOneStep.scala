@@ -1,4 +1,4 @@
-import fos.Arithmetic._
+import fos.Arithmetic.reduce
 import fos._
 import org.scalatest.{ Matchers, FunSuite }
 
@@ -51,6 +51,18 @@ class TestOneStep extends FunSuite with Matchers {
 
         for ((input, output) <- congruences) {
             reduce(input) should be(output)
+        }
+    }
+
+    test("Stuck terms") {
+        val stuckTerms = Seq(
+            If(Zero, Pred(Succ(Zero)), Succ(Pred(Zero))),
+            IsZero(False),
+            Pred(False),
+            Succ(True))
+
+        for (term <- stuckTerms) {
+            reduce(term) should be(term)
         }
     }
 }
