@@ -1,4 +1,4 @@
-import fos.Arithmetic._
+import fos.Arithmetic.{ eval, StuckTermException }
 import fos._
 import org.scalatest.{ Matchers, FunSuite }
 
@@ -17,10 +17,63 @@ class TestBigStep extends FunSuite with Matchers {
         val input = Pred(Succ(Succ(Succ(False))))
         val output = Succ(False)
 
-        val StuckTermException(term) = intercept[StuckTermException] {
-            eval(input)
+        evalReturnStuck(input) should be(output)
+    }
+
+    test("Simple tests") {
+        val singleLevel = Map(
+            If(True, True, False) -> True,
+            If(False, True, False) -> False,
+            IsZero(Zero) -> True,
+            IsZero(Succ(Zero)) -> False,
+            Pred(Zero) -> Zero,
+            Pred(Succ(Zero)) -> Zero)
+
+        for ((input, output) <- singleLevel) {
+            eval(input) should be(output)
         }
 
-        assert(term == output)
+        val congruences = Map(
+            If(IsZero(Zero), True, False) -> True,
+            IsZero(Pred(Succ(Zero))) -> True,
+            Pred(Pred(Zero)) -> Zero,
+            Succ(Pred(Zero)) -> Succ(Zero),
+            Pred(Succ(Zero)) -> Zero)
+
+        for ((input, output) <- congruences) {
+            eval(input) should be(output)
+        }
+
+    }
+
+    test("Stuck terms") {
+        val simpleStuckTerms = Seq(
+            If(Zero, Pred(Succ(Zero)), Succ(Pred(Zero))),
+            IsZero(False),
+            Pred(False),
+            Succ(True))
+
+        for (term <- simpleStuckTerms) {
+            evalReturnStuck(term) should be(term)
+        }
+
+        val stuckTerms = Map(
+            Succ(IsZero(False)) -> IsZero(False),
+            If(False, Succ(False), Pred(True)) -> Pred(True),
+            If(True, Succ(False), Pred(True)) -> Succ(False),
+            IsZero(Succ(IsZero(Zero))) -> Succ(True),
+            Succ(IsZero(IsZero(Zero))) -> IsZero(True))
+
+        for ((term, stuck) <- stuckTerms) {
+            evalReturnStuck(term) should be(stuck)
+        }
+    }
+
+    def evalReturnStuck(tree: Term): Term = {
+        val StuckTermException(res) = intercept[StuckTermException] {
+            eval(tree)
+        }
+
+        res
     }
 }
