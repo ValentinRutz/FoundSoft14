@@ -52,9 +52,9 @@ object Arithmetic extends StandardTokenParsers {
         case If(True, t, e) => t
         case If(False, t, e) => e
         case IsZero(Zero) => True
-        case IsZero(Succ(nv)) if nv.isNumeric => False
+        case IsZero(Succ(nv)) if nv.isNumericValue => False
         case Pred(Zero) => Zero
-        case Pred(Succ(nv)) if nv.isNumeric => nv
+        case Pred(Succ(nv)) if nv.isNumericValue => nv
 
         /* Congruence */
         case If(c, t, e) => If(reduce(c), t, e)
@@ -88,21 +88,21 @@ object Arithmetic extends StandardTokenParsers {
 
         /* B-SUCC */
         case Succ(t) => eval(t) match {
-            case nv if nv.isNumeric => Succ(nv)
+            case nv if nv.isNumericValue => Succ(nv)
             case _ => throw new StuckTermException(tree)
         }
 
         /* B-PREDZERO, B-PREDSUCC */
         case Pred(t) => eval(t) match {
             case Zero => Zero
-            case Succ(nv) if nv.isNumeric => nv
+            case Succ(nv) if nv.isNumericValue => nv
             case _ => throw new StuckTermException(tree)
         }
 
         /* B-ISZEROZERO, B-ISZEROSUCC */
         case IsZero(t) => eval(t) match {
             case Zero => True
-            case Succ(nv) if nv.isNumeric => False
+            case Succ(nv) if nv.isNumericValue => False
             case _ => throw new StuckTermException(tree)
         }
 

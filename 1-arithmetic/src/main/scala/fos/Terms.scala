@@ -5,25 +5,17 @@ import scala.util.parsing.input.Positional
 /** Abstract Syntax Trees for terms. */
 abstract sealed class Term extends Positional {
 
-    /** Returns true if this term is of numeric type */
-    def isNumeric: Boolean = this match {
+    /** Returns true if this term is a numeric value */
+    def isNumericValue: Boolean = this match {
         case Zero => true
-        case Pred(t) => t.isNumeric
-        case Succ(t) => t.isNumeric
-        case _ => false
-    }
-
-    /** Returns true if this term is a numeric literal */
-    def isNumericLiteral: Boolean = this match {
-        case Zero => true
-        case Succ(t) => t.isNumericLiteral
+        case Succ(t) => t.isNumericValue
         case _ => false
     }
 
     /** Returns true if this term is a value */
     def isValue: Boolean = this match {
         case True | False => true
-        case t if t.isNumericLiteral => true
+        case t if t.isNumericValue => true
         case _ => false
     }
 }
