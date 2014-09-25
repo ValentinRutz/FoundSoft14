@@ -33,7 +33,6 @@ object Arithmetic extends StandardTokenParsers {
     def Expr: Parser[Term] = (
         "true" ^^^ True
         | "false" ^^^ False
-        | "0" ^^^ Zero
         | ("if" ~> Expr) ~ ("then" ~> Expr) ~ ("else" ~> Expr) ^^ { case c ~ t ~ e => If(c, t, e) }
         | "succ" ~> Expr ^^ Succ
         | "pred" ~> Expr ^^ Pred
