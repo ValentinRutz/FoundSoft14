@@ -61,8 +61,8 @@ class TestBigStep extends FunSuite with Matchers {
             Succ(IsZero(False)) -> IsZero(False),
             If(False, Succ(False), Pred(True)) -> Pred(True),
             If(True, Succ(False), Pred(True)) -> Succ(False),
-            IsZero(Succ(IsZero(Zero))) -> Succ(True),
-            Succ(IsZero(IsZero(Zero))) -> IsZero(True))
+            IsZero(Succ(IsZero(Zero))) -> Succ(IsZero(Zero)),
+            Succ(IsZero(IsZero(Zero))) -> IsZero(IsZero(Zero)))
 
         for ((term, stuck) <- stuckTerms) {
             evalReturnStuck(term) should be(stuck)

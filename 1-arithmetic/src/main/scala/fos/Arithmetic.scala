@@ -82,27 +82,27 @@ object Arithmetic extends StandardTokenParsers {
         case If(c, t, e) => eval(c) match {
             case True => eval(t)
             case False => eval(e)
-            case stuck => throw new StuckTermException(If(stuck, t, e))
+            case stuck => throw new StuckTermException(tree)
         }
 
         /* B-SUCC */
         case Succ(t) => eval(t) match {
             case nv if nv.isNumericValue => Succ(nv)
-            case stuck => throw new StuckTermException(Succ(stuck))
+            case stuck => throw new StuckTermException(tree)
         }
 
         /* B-PREDZERO, B-PREDSUCC */
         case Pred(t) => eval(t) match {
             case Zero => Zero
             case Succ(nv) if nv.isNumericValue => nv
-            case stuck => throw new StuckTermException(Pred(stuck))
+            case stuck => throw new StuckTermException(tree)
         }
 
         /* B-ISZEROZERO, B-ISZEROSUCC */
         case IsZero(t) => eval(t) match {
             case Zero => True
             case Succ(nv) if nv.isNumericValue => False
-            case stuck => throw new StuckTermException(IsZero(stuck))
+            case stuck => throw new StuckTermException(tree)
         }
 
         /* Error */
