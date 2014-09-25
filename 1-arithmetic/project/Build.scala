@@ -13,8 +13,10 @@ object ExerciseBuild extends Build {
     name         := "fos-project1",
     version      := "1.0",
     scalaVersion := "2.10.4",
+    resolvers ++= Seq("Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"),
     scalacOptions ++= List("-unchecked", "-deprecation"),
-    libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.0" % "test")
+    libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
+    libraryDependencies ++= Seq("org.scalacheck" %% "scalacheck" % "1.11.5" % "test"))
 
   val filesToInclude = Seq("src/main/scala/fos/Arithmetic.scala", "src/main/scala/fos/Terms.scala")
 
