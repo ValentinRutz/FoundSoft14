@@ -4,7 +4,6 @@ import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.input._
 import scala.annotation.tailrec
 import java.lang.IllegalArgumentException
-import Pipeline._
 
 /**
   * This object implements a parser and evaluator for the NB
@@ -113,8 +112,6 @@ object Arithmetic extends StandardTokenParsers {
         val tokens = new lexical.Scanner(StreamReader(new java.io.InputStreamReader(System.in)))
         phrase(Expr)(tokens) match {
             case Success(trees, _) => {
-                println(trees)
-
                 // small step
                 smallStepPrint(trees)
 
@@ -127,10 +124,15 @@ object Arithmetic extends StandardTokenParsers {
         }
     }
 
-    /** Basic pipeline for printing the term going through */
-    def printTerm: Pipeline[Term, Term] = (term: Term) => {
-        println(term)
-        term
+    /**
+      * Repeat the reduce step until it doesn't reduce anymore
+      *
+      * @param f The function to evaluate before each reduce
+      */
+    @tailrec def multiReduce(f: Term => Unit)(term: Term): Term = {
+        f(term)
+        val next = reduce(term)
+        if (next == term) term else multiReduce(f)(next)
     }
 
     /*
@@ -138,16 +140,13 @@ object Arithmetic extends StandardTokenParsers {
    * Stops when reduction fixpoint reached and prints error if the result is not a terminal
    */
     def smallStepPrint(tree: Term): Unit = {
-        val stepPipe = printTerm | Pipeline(reduce)
-        val pipe = repeatWhile(stepPipe, (a: Term, b: Term) => a != b)
-
-        val res = pipe.run(tree)
+        val res = multiReduce(println)(tree)
         if (!res.isValue) println(s"Stuck term: $res")
     }
 
     def bigStepPrint(tree: Term): Unit = {
         try {
-            val res = Pipeline(eval).run(tree)
+            val res = eval(tree)
             println(s"Big step: $res")
         } catch {
             case StuckTermException(term) => println(s"Big step: Stuck term: $term")

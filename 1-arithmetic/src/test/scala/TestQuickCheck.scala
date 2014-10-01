@@ -1,6 +1,5 @@
 import fos.Arithmetic._
 import fos._
-import fos.Pipeline._
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Gen
@@ -26,9 +25,8 @@ class TestQuickCheck extends Properties("Term") {
         else Gen.oneOf(leafs, singleNodes(max), ifNodes(max))
 
     property(" eval === multi(reduce) ") = forAll(terms(12)) { (term: Term) =>
-        val reducePipe = repeatWhile(reduce _, (a: Term, b: Term) => a != b)
 
-        val res = reducePipe.run(term)
+        val res = multiReduce(_ => {})(term)
 
         if (res.isValue) {
             eval(term) == res
@@ -78,9 +76,8 @@ class TestQuickCheck extends Properties("Term") {
     def typedTerms(max: Int): Gen[Term] = Gen.oneOf(boolTerms(max), intTerms(max))
 
     property("typedTerms eval === multi(reduce) ") = forAll(typedTerms(12)) { (term: Term) =>
-        val reducePipe = repeatWhile(reduce _, (a: Term, b: Term) => a != b)
 
-        val res1 = reducePipe.run(term)
+        val res1 = multiReduce(_ => {})(term)
         val res2 = eval(term)
 
         res1 == res2 && res1.isValue
