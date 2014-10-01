@@ -78,4 +78,28 @@ class TestQuickCheck extends Properties("Term") {
 
         res1 == res2 && res1.isValue
     }
+
+    def toString(term: Term): String = term match {
+        case True => "true"
+        case False => "false"
+        case Zero => "0"
+        case IsZero(term) => "iszero " + toString(term)
+        case Succ(term) => "succ " + toString(term)
+        case Pred(term) => "pred " + toString(term)
+        case If(t1, t2, t3) =>
+            "if " + toString(t1) +
+                " then " + toString(t2) +
+                " else " + toString(t3)
+    }
+
+    property("parse(toString(tree)) == tree") = forAll(terms(10)) {
+        (t: Term) =>
+            val s = toString(t)
+            val tokens = new lexical.Scanner(s)
+            phrase(Expr)(tokens) match {
+                case Success(tree, _) => tree == t
+                case e => false
+            }
+
+    }
 }
