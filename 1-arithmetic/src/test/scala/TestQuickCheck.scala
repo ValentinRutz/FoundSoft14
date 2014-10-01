@@ -26,17 +26,13 @@ class TestQuickCheck extends Properties("Term") {
 
     property(" eval === multi(reduce) ") = forAll(terms(12)) { (term: Term) =>
 
-        val res = multiReduce(_ => {})(term)
+        val res1 = multiReduce(_ => {})(term)
+        val res2 = eval(term)
 
-        if (res.isValue) {
-            eval(term) == res
+        if (res1.isValue) {
+            res2.isValue && res1 == res2
         } else {
-            try {
-                eval(res)
-                false
-            } catch {
-                case StuckTermException(stuck) => true
-            }
+            !res2.isValue
         }
     }
 

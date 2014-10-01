@@ -15,9 +15,6 @@ object Arithmetic extends StandardTokenParsers {
 
     import lexical.NumericLit
 
-    /** Simple exception for terms that cannot be evaluated */
-    case class StuckTermException(tree: Term) extends Throwable
-
     /**
       * Parser for the NB language defined by the grammar below
       *
@@ -81,27 +78,31 @@ object Arithmetic extends StandardTokenParsers {
         case If(c, t, e) => eval(c) match {
             case True => eval(t)
             case False => eval(e)
-            case stuck => throw new StuckTermException(tree)
+            case s if s.isValue => tree
+            case s => s
         }
 
         /* B-SUCC */
         case Succ(t) => eval(t) match {
             case nv if nv.isNumericValue => Succ(nv)
-            case stuck => throw new StuckTermException(tree)
+            case s if s.isValue => tree
+            case s => s
         }
 
         /* B-PREDZERO, B-PREDSUCC */
         case Pred(t) => eval(t) match {
             case Zero => Zero
             case Succ(nv) if nv.isNumericValue => nv
-            case stuck => throw new StuckTermException(tree)
+            case s if s.isValue => tree
+            case s => s
         }
 
         /* B-ISZEROZERO, B-ISZEROSUCC */
         case IsZero(t) => eval(t) match {
             case Zero => True
             case Succ(nv) if nv.isNumericValue => False
-            case stuck => throw new StuckTermException(tree)
+            case s if s.isValue => tree
+            case s => s
         }
 
         /* Error */
@@ -145,11 +146,8 @@ object Arithmetic extends StandardTokenParsers {
     }
 
     def bigStepPrint(tree: Term): Unit = {
-        try {
-            val res = eval(tree)
-            println(s"Big step: $res")
-        } catch {
-            case StuckTermException(term) => println(s"Big step: Stuck term: $term")
-        }
+        val res = eval(tree)
+        val stuck = if (!res.isValue) "Stuck term: " else ""
+        println(s"Big step: ${stuck}$res")
     }
 }

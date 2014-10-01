@@ -1,4 +1,4 @@
-import fos.Arithmetic.{ eval, StuckTermException }
+import fos.Arithmetic.eval
 import fos._
 import org.scalatest.{ Matchers, FunSuite }
 
@@ -17,7 +17,8 @@ class TestBigStep extends FunSuite with Matchers {
         val input = Pred(Succ(Succ(Succ(False))))
         val output = Succ(False)
 
-        evalReturnStuck(input) should be(output)
+        output.isValue should be(false)
+        eval(input) should be(output)
     }
 
     test("Simple tests") {
@@ -54,7 +55,8 @@ class TestBigStep extends FunSuite with Matchers {
             Succ(True))
 
         for (term <- simpleStuckTerms) {
-            evalReturnStuck(term) should be(term)
+            term.isValue should be(false)
+            eval(term) should be(term)
         }
 
         val stuckTerms = Map(
@@ -65,15 +67,9 @@ class TestBigStep extends FunSuite with Matchers {
             Succ(IsZero(IsZero(Zero))) -> IsZero(IsZero(Zero)))
 
         for ((term, stuck) <- stuckTerms) {
-            evalReturnStuck(term) should be(stuck)
+            stuck.isValue should be(false)
+            eval(term) should be(stuck)
         }
     }
 
-    def evalReturnStuck(tree: Term): Term = {
-        val StuckTermException(res) = intercept[StuckTermException] {
-            eval(tree)
-        }
-
-        res
-    }
 }
