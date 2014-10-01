@@ -18,7 +18,8 @@ object ExerciseBuild extends Build {
     libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
     libraryDependencies ++= Seq("org.scalacheck" %% "scalacheck" % "1.11.5" % "test"))
 
-  val filesToInclude = Seq("src/main/scala/fos/Arithmetic.scala", "src/main/scala/fos/Terms.scala")
+  val filesToInclude = Seq("src/main/scala/fos/Arithmetic.scala",
+  "src/main/scala/fos/Terms.scala") ++  allFilesInFolder("src/test/scala")
 
   val packageToMoodle = InputKey[Unit]("package-for-submission", "Package all files necessary for submission, given your surnames. For example 'Plociniczak Jovanovic'")
 
@@ -38,6 +39,10 @@ object ExerciseBuild extends Build {
 
   lazy val root = Project("fos-project1", file(".")).settings((exerciseSettings ++ Seq(packageToMoodleTask) ++ scalariformConfig):_*)
 
+  private def allFilesInFolder(folder: String): Seq[String] = {
+    new File(folder).list.map(s => folder + "/" + s)
+  }
+  
   private def gatherSources(out: File, po: Seq[PackageOption], cacheDir: File, log: Logger): File = {
     val packagePrefix = "src/foo"
     val mappings = filesToInclude.flatMap{src =>
