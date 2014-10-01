@@ -3,7 +3,7 @@ FoundSoft14
 
 Repo for all the programming assignements for the Foundations of Software class
 at EPFL.
-e-mail for submissions : foundsoft14@gmail.com
+e-mail for submissions : foundsoft2014@gmail.com
 
 Members of the team
 -------------------
