@@ -8,12 +8,27 @@ class TestParser extends FunSuite with Matchers {
     val y = Variable("y")
     val z = Variable("z")
 
-    implicit class testingString(input: String) {
+    implicit class TestingString(input: String) {
         val tokens = new lexical.Scanner(input)
         def shouldBe(expectedTree: Term): Unit = {
             phrase(Term)(tokens) match {
                 case Success(result, _) => {
                     result should be(expectedTree)
+                }
+                case Failure(msg, _) => fail(msg)
+                case _ => fail("something went really wrong")
+            }
+        }
+
+        def shouldBe(equivalentForm: String): Unit = {
+            val tokens2 = new lexical.Scanner(equivalentForm)
+            phrase(Term)(tokens) match {
+                case Success(result, _) => phrase(Term)(tokens2) match {
+                    case Success(result2, _) => {
+                        result should be(result2)
+                    }
+                    case Failure(msg, _) => fail(msg)
+                    case _ => fail("something went really wrong")
                 }
                 case Failure(msg, _) => fail(msg)
                 case _ => fail("something went really wrong")
@@ -55,6 +70,10 @@ class TestParser extends FunSuite with Matchers {
     test("Test parsing \"\\x. x x x\" (abstraction max right extension)") {
         "\\x. x x x" shouldBe Abstraction(x, Application(Application(x, x), x))
 
+    }
+
+    test("Assignment example") {
+        "\\x.\\y. x y x" shouldBe "\\x. (\\y. ((x y) x))"
     }
 
 }
