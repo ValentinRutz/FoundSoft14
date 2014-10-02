@@ -20,8 +20,13 @@ object Untyped extends StandardTokenParsers {
         ("\\" ~> ident) ~ ("." ~> Term) ^^ {
             case param ~ body => Abstraction(Variable(param), body)
         }
-        | ident ^^ { case ident => Variable(ident) }
-        | Term ~ Term ^^ { case fun ~ arg => Application(fun, arg) }
+        | "(" ~> Term <~ ")"
+        | ident ^^ {
+            case ident => Variable(ident)
+        }
+        | Term ~ Term ^^ {
+            case fun ~ arg => Application(fun, arg)
+        }
         | failure("illegal start of term"))
 
     //   ... To complete ... 
