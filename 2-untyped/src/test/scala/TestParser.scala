@@ -14,7 +14,8 @@ class TestParser extends FunSuite with Matchers {
                 case Success(result, _) => {
                     result should be(expectedTree)
                 }
-                case _ => fail
+                case Failure(msg, _) => fail(msg)
+                case _ => fail("something went really wrong")
             }
         }
     }
