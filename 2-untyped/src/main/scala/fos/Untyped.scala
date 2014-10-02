@@ -16,7 +16,7 @@ object Untyped extends StandardTokenParsers {
    */
   def Term: Parser[Term] = (
   //   ... To complete ... 
-    | failure("illegal start of term"))
+    failure("illegal start of term"))
 
   //   ... To complete ... 
 
@@ -30,11 +30,13 @@ object Untyped extends StandardTokenParsers {
    */
   def reduceNormalOrder(t: Term): Term = t match {
   //   ... To complete ... 
+    case _ => ???
   }
 
   /** Call by value reducer. */
   def reduceCallByValue(t: Term): Term = t match {
   //   ... To complete ... 
+    case _ => ???
   }
 
   /** Returns a stream of terms, each being one step of reduction.
