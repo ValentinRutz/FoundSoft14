@@ -38,6 +38,18 @@ object Untyped extends StandardTokenParsers {
     /** Term 't' does not match any reduction rule. */
     case class NoRuleApplies(t: Term) extends Exception(t.toString)
 
+    object freshName {
+        var x = 0
+        def apply(name: String): String = {
+            x = x + 1
+            name + x
+        }
+
+        def apply(variable: Variable): Variable = {
+            val Variable(name) = variable
+            Variable(freshName(name))
+        }
+    }
     /**
       * Free variables extraction
       *
@@ -51,6 +63,18 @@ object Untyped extends StandardTokenParsers {
     }
 
     /**
+      * Alpha-conversion
+      * Only renames abstraction since they are the only
+      * way to bound variable names
+      *
+      */
+    def alpha(tree: Abstraction): Abstraction = {
+        val Abstraction(variable, body) = tree
+        val freshVar = freshName(variable)
+        Abstraction(freshVar, subst(body)(variable.name, freshVar))
+    }
+
+    /**
       * Substitution method
       * substitute and rename variables if necessary to avoid free variable capture
       *
@@ -59,7 +83,19 @@ object Untyped extends StandardTokenParsers {
       * @param s the term to substitute variable with
       * @return a new corresponding tree with substitution applied
       */
-    def subst(tree: Term, x: String, s: Term): Term = tree
+    def subst(tree: Term)(implicit x: String, s: Term): Term = tree match {
+        case Variable(name) if (name == x) => s
+        case Application(fun, arg) => Application(subst(fun), subst(arg))
+        case a @ Abstraction(param, _) if (param.name == x) => a
+        case Abstraction(param, body) if (!freeVars(s).contains(param)) => {
+            Abstraction(param, subst(body))
+        }
+        case a @ Abstraction(_, _) => {
+            // param.name != x, freeVars(s) contain param
+            subst(alpha(a))
+        }
+        case _ => tree
+    }
 
     /**
       * Normal order (leftmost, outermost redex first).
