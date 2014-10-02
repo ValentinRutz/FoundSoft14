@@ -39,6 +39,29 @@ object Untyped extends StandardTokenParsers {
     case class NoRuleApplies(t: Term) extends Exception(t.toString)
 
     /**
+      * Free variables extraction
+      *
+      * @param t the term to compute
+      * @return the set of free variables in t
+      */
+    def freeVars(t: Term): Set[Variable] = t match {
+        case x @ Variable(_) => Set(x)
+        case Abstraction(x, t1) => freeVars(t1) - x
+        case Application(t1, t2) => freeVars(t1) ++ freeVars(t2)
+    }
+
+    /**
+      * Substitution method
+      * substitute and rename variables if necessary to avoid free variable capture
+      *
+      * @param tree the tree to substitute
+      * @param x the name of variable to substitute
+      * @param s the term to substitute variable with
+      * @return a new corresponding tree with substitution applied
+      */
+    def subst(tree: Term, x: String, s: Term): Term = tree
+
+    /**
       * Normal order (leftmost, outermost redex first).
       *
       *  @param t the initial term
