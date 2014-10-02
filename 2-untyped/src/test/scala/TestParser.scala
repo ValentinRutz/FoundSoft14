@@ -49,7 +49,12 @@ class TestParser extends FunSuite with Matchers {
         "(\\x. x) (\\y. y)" shouldBe Application(Abstraction(x, x), Abstraction(y, y))
     }
 
-    test("Test parsing \"x y z\"") {
+    test("Test parsing \"x y z\" (left associative)") {
         "x y z" shouldBe Application(Application(x, y), z)
     }
+    test("Test parsing \"\\x. x x x\" (abstraction max right extension)") {
+        "\\x. x x x" shouldBe Abstraction(x, Application(Application(x, x), x))
+
+    }
+
 }
