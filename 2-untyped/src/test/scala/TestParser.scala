@@ -4,11 +4,13 @@ import org.scalatest.{ Matchers, FunSuite }
 
 class TestParser extends FunSuite with Matchers {
 
-    def tokens(input: String) = new lexical.Scanner(input)
+    val x = Variable("x")
+    val y = Variable("y")
 
     implicit class testingString(input: String) {
-        def =?(expectedTree: Term): Unit = {
-            phrase(Term)(tokens(input)) match {
+        val tokens = new lexical.Scanner(input)
+        def shouldBe(expectedTree: Term): Unit = {
+            phrase(Term)(tokens) match {
                 case Success(result, _) => {
                     result should be(expectedTree)
                 }
@@ -17,27 +19,27 @@ class TestParser extends FunSuite with Matchers {
         }
     }
 
-    test("Test Parsing single var") {
-        val input = "x"
-        val expectedTree = Variable("x")
-        input =? expectedTree
+    test("Test Parsing \"x\"") {
+        "x" shouldBe x
     }
 
-    test("Test parsing simple abstraction") {
-        val input = "\\x. y"
-        val expectedTree = Abstraction(Variable("x"), Variable("y"))
-        input =? expectedTree
+    test("Test parsing \"\\x. y\"") {
+        "\\x. y" shouldBe Abstraction(x, y)
     }
 
-    test("Test parsing simple application") {
-        val input = "x x"
-        val expectedTree = Application(Variable("x"), Variable("x"))
-        input =? expectedTree
+    test("Test parsing \"x x\"") {
+        "x x" shouldBe Application(x, x)
     }
 
-    test("Test parsing parenthesis variable") {
-        val input = "(x)"
-        val expectedTree = Variable("x")
-        input =? expectedTree
+    test("Test parsing \"(((x)))\"") {
+        "(((x)))" shouldBe x
+    }
+
+    test("Test parsing \"(\\x. x) y\"") {
+        "(\\x. x) y" shouldBe Application(Abstraction(x, x), y)
+    }
+
+    test("Test parsing \"\\x.\\y. x\"") {
+        "\\x.\\y. x" shouldBe Abstraction(x, Abstraction(y, x))
     }
 }
