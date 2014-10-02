@@ -16,9 +16,8 @@ object Untyped extends StandardTokenParsers {
       * Term     ::= AbsOrVar { AbsOrVar }
       */
     def Term: Parser[Term] = (
-        //   ... To complete ... 
-        (Abs | Var | Par) ~ rep(Abs | Var | Par) ^^ {
-            case x ~ xs => x :: xs reduceLeft (Application(_, _))
+        rep(Abs | Var | Par) ^^ {
+            _ reduceLeft (Application(_, _))
         }
         | failure("illegal start of term"))
 
@@ -36,8 +35,6 @@ object Untyped extends StandardTokenParsers {
         "(" ~> Term <~ ")"
     }
 
-    //   ... To complete ... 
-
     /** Term 't' does not match any reduction rule. */
     case class NoRuleApplies(t: Term) extends Exception(t.toString)
 
@@ -48,14 +45,13 @@ object Untyped extends StandardTokenParsers {
       *  @return  the reduced term
       */
     def reduceNormalOrder(t: Term): Term = t match {
-        //   ... To complete ... 
-        case _ => ???
+        case _ => throw NoRuleApplies(t)
     }
 
     /** Call by value reducer. */
     def reduceCallByValue(t: Term): Term = t match {
         //   ... To complete ... 
-        case _ => ???
+        case _ => throw NoRuleApplies(t)
     }
 
     /**
