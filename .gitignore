@@ -4,7 +4,7 @@
 # sbt specific
 .metadata
 .cache/
-.history/
+.history
 .lib/
 dist/*
 target/
