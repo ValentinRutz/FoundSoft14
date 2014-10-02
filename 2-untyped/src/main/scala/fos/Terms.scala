@@ -12,7 +12,7 @@ case class Variable(name: String) extends Term {
 }
 
 case class Abstraction(param: Variable, body: Term) extends Term {
-    override def toString: String = "\\" + Variable.toString + ". (" + body.toString + ")"
+    override def toString: String = "\\" + param.toString + ". (" + body.toString + ")"
 }
 
 case class Application(function: Term, argument: Term) extends Term {
