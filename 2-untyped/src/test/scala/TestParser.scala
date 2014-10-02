@@ -6,6 +6,7 @@ class TestParser extends FunSuite with Matchers {
 
     val x = Variable("x")
     val y = Variable("y")
+    val z = Variable("z")
 
     implicit class testingString(input: String) {
         val tokens = new lexical.Scanner(input)
@@ -42,5 +43,13 @@ class TestParser extends FunSuite with Matchers {
 
     test("Test parsing \"\\x.\\y. x\"") {
         "\\x.\\y. x" shouldBe Abstraction(x, Abstraction(y, x))
+    }
+
+    test("Test parsing \"(\\x. x) (\\y. y)\"") {
+        "(\\x. x) (\\y. y)" shouldBe Application(Abstraction(x, x), Abstraction(y, y))
+    }
+
+    test("Test parsing \"x y z\"") {
+        "x y z" shouldBe Application(Application(x, y), z)
     }
 }
