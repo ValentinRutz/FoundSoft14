@@ -17,7 +17,12 @@ object Untyped extends StandardTokenParsers {
       */
     def Term: Parser[Term] = (
         //   ... To complete ... 
-        failure("illegal start of term"))
+        ("\\" ~> ident) ~ ("." ~> Term) ^^ {
+            case param ~ body => Abstraction(Variable(param), body)
+        }
+        | ident ^^ { case ident => Variable(ident) }
+        | Term ~ Term ^^ { case fun ~ arg => Application(fun, arg) }
+        | failure("illegal start of term"))
 
     //   ... To complete ... 
 
