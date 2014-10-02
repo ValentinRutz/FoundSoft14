@@ -26,6 +26,7 @@ object Untyped extends StandardTokenParsers {
         }
         | Term ~ Term ^^ {
             case fun ~ arg => Application(fun, arg)
+
         }
         | failure("illegal start of term"))
 
