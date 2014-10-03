@@ -50,4 +50,12 @@ class TestSubstAlpha extends FunSuite with Matchers {
         val sTree = Abstraction(s1, s)
         subst(tree)("x", s) should be(sTree)
     }
+
+    test("abstraction substitution") {
+        // [x->s] x y
+        resetFreshName
+        val tree = Application(x, y)
+        val sTree = Application(s, y)
+        subst(tree)("x", s) should be(sTree)
+    }
 }

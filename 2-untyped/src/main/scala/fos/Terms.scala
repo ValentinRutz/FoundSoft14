@@ -11,6 +11,7 @@ case class Variable(name: String) extends Term {
     override def toString: String = name
 }
 
+// TODO consider replacing param Variable by a simple String (variable's name
 case class Abstraction(param: Variable, body: Term) extends Term {
     override def toString: String = "\\" + param.toString + ". (" + body.toString + ")"
 }

@@ -104,6 +104,7 @@ object Untyped extends StandardTokenParsers {
       *  @return  the reduced term
       */
     def reduceNormalOrder(t: Term): Term = t match {
+        // ... To complete ...
         case _ => throw NoRuleApplies(t)
     }
 
