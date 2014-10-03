@@ -39,10 +39,10 @@ object Untyped extends StandardTokenParsers {
     case class NoRuleApplies(t: Term) extends Exception(t.toString)
 
     object freshName {
-        var x = 0
+        var counter = 0
         def apply(name: String): String = {
-            x = x + 1
-            name + x
+            counter = counter + 1
+            name + counter
         }
 
         def apply(variable: Variable): Variable = {
