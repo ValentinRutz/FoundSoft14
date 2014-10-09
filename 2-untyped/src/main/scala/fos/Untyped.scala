@@ -104,13 +104,16 @@ object Untyped extends StandardTokenParsers {
       *  @return  the reduced term
       */
     def reduceNormalOrder(t: Term): Term = t match {
-        // ... To complete ...
+        case Abstraction(param, body) => Abstraction(param, reduceNormalOrder(body))
+        case Application(Abstraction(param, body), e) => subst(body)(param.name, e)
+        case Application(fun, arg) => Application(reduceNormalOrder(fun), arg)
         case _ => throw NoRuleApplies(t)
     }
 
     /** Call by value reducer. */
     def reduceCallByValue(t: Term): Term = t match {
-        //   ... To complete ... 
+        case Application(Abstraction(param, body), arg) => subst(body)(param.name, reduceCallByValue(arg))
+        case Application(fun, arg) => Application(fun, reduceCallByValue(arg))
         case _ => throw NoRuleApplies(t)
     }
 
