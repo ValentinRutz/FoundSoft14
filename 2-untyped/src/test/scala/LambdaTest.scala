@@ -12,7 +12,20 @@ trait LambdaTest {
     val z = Variable("z")
 
     implicit class TestingString(input: String) {
-        val tokens = new lexical.Scanner(input)
+
+        def test(expectedTree: Term)(reduceFun: Term => Term): Unit = {
+            val result = try {
+                reduceFun(parse(input))
+            } catch {
+                case NoRuleApplies(term) => term
+            }
+            result should be(expectedTree)
+        }
+
+        def test(expectedForm: String)(reduceFun: Term => Term): Unit = {
+            test(parse(expectedForm))(reduceFun)
+        }
+
         def shouldParseTo(expectedTree: Term): Unit = {
             test(expectedTree)(identity)
         }
@@ -21,28 +34,12 @@ trait LambdaTest {
             test(equivalentForm)(identity)
         }
 
-        def test(expectedTree: Term)(reduceFun: Term => Term): Unit = {
+        def parse(in: String): Term = {
+            val tokens = new lexical.Scanner(in)
             phrase(Term)(tokens) match {
-                case Success(result, _) => {
-                    reduceFun(result) should be(expectedTree)
-                }
+                case Success(result, _) => result
                 case Failure(msg, _) => fail(msg)
-                case _ => fail("someting went really wrong")
-            }
-        }
-
-        def test(expectedForm: String)(reduceFun: Term => Term): Unit = {
-            val tokens2 = new lexical.Scanner(expectedForm)
-            phrase(Term)(tokens) match {
-                case Success(result, _) => phrase(Term)(tokens2) match {
-                    case Success(result2, _) => {
-                        reduceFun(result) should be(result2)
-                    }
-                    case Failure(msg, _) => fail(msg)
-                    case _ => fail("something went really wrong")
-                }
-                case Failure(msg, _) => fail(msg)
-                case _ => fail("something went really wrong")
+                case _ => fail("Error")
             }
         }
 
@@ -51,19 +48,6 @@ trait LambdaTest {
         }
         def shouldReduceTo(expectedForm: String): Unit = {
             test(expectedForm)(reducer)
-        }
-
-        def shouldReduceNormalTo(expectedTree: Term): Unit = {
-            test(expectedTree)(reduceNormalOrder)
-        }
-        def shouldReduceNormalTo(expectedFrom: String): Unit = {
-            test(expectedFrom)(reduceNormalOrder)
-        }
-        def shouldReduceValueTo(expectedTree: Term): Unit = {
-            test(expectedTree)(reduceCallByValue)
-        }
-        def shouldReduceValueTo(expectedForm: String): Unit = {
-            test(expectedForm)(reduceCallByValue)
         }
     }
 }
