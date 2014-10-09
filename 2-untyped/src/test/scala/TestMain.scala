@@ -7,7 +7,6 @@ import org.scalatest.{ Matchers, FunSuite }
   */
 class TestMain extends FunSuite with Matchers {
     test("Example from lab statement") {
-        pending
 
         val input = """\y. ((\x.x) y)"""
         val output = """normal order: 
