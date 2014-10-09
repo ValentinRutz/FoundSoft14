@@ -105,6 +105,19 @@ object Untyped extends StandardTokenParsers {
       */
     def reduceNormalOrder(t: Term): Term = t match {
         // ... To complete ...
+        case v @ Variable(name) => v
+        case abs @ Abstraction(param, body) => {
+            Abstraction(param, reduceNormalOrder(body))
+        }
+        case Application(fun @ Variable(name), arg) => {
+            Application(fun, reduceNormalOrder(arg))
+        }
+        case Application(Abstraction(Variable(name), body), arg) => {
+            subst(body)(name, arg)
+        }
+        case Application(fun, arg) => {
+            Application(reduceNormalOrder(fun), arg)
+        }
         case _ => throw NoRuleApplies(t)
     }
 
