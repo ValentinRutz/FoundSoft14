@@ -39,10 +39,15 @@ object Untyped extends StandardTokenParsers {
     case class NoRuleApplies(t: Term) extends Exception(t.toString)
 
     object freshName {
+        val Versioned = """([^\$]+)\$(\d+)""".r
         var counter = 0
         def apply(name: String): String = {
+            val realName = name match {
+                case Versioned(n, v) => n
+                case _ => name
+            }
             counter = counter + 1
-            name + "$" + counter
+            realName + "$" + counter
         }
 
         def apply(variable: Variable): Variable = {
