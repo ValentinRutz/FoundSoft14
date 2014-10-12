@@ -24,7 +24,7 @@ class TestSubstAlpha extends FunSuite with Matchers {
     val y: Variable = Variable("y")
     val z: Variable = Variable("z")
 
-    val s1: Variable = Variable("s1")
+    val s1: Variable = Variable("s$1")
 
     def resetFreshName: Unit = freshName.counter = 0
 

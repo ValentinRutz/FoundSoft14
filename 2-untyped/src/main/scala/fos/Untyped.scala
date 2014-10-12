@@ -42,7 +42,7 @@ object Untyped extends StandardTokenParsers {
         var counter = 0
         def apply(name: String): String = {
             counter = counter + 1
-            name + counter
+            name + "$" + counter
         }
 
         def apply(variable: Variable): Variable = {
