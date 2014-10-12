@@ -112,8 +112,17 @@ object Untyped extends StandardTokenParsers {
 
     /** Call by value reducer. */
     def reduceCallByValue(t: Term): Term = t match {
-        case Application(Abstraction(param, body), arg) => subst(body)(param.name, reduceCallByValue(arg))
-        case Application(fun, arg) => Application(fun, reduceCallByValue(arg))
+        /* E-APPABS */
+        case Application(Abstraction(param, body), arg) if arg.isValue =>
+            subst(body)(param.name, arg)
+
+        /* E-APP2 */
+        case Application(fun, arg) if fun.isValue =>
+            Application(fun, reduceCallByValue(arg))
+
+        /* E-APP1 */
+        case Application(fun, arg) =>
+            Application(reduceCallByValue(fun), arg)
         case _ => throw NoRuleApplies(t)
     }
 
