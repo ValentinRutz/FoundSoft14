@@ -55,4 +55,9 @@ class TestCallByValue extends FunSuite with Matchers with LambdaTest {
         s"$nt $tru".fullReduce(fls)(reducer)
     }
 
+    test("""((\x.x) a) ((\y.y) b)""") {
+        val term = normalForm("""((\x.x) a) ((\y.y) b)""")
+        term.fullReduce(term)(reducer)
+        term shouldReduceTo "a" // this is dependent on what we put in NoRuleApplies exception
+    }
 }

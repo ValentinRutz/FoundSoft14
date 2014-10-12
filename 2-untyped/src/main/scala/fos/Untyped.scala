@@ -111,7 +111,11 @@ object Untyped extends StandardTokenParsers {
     def reduceNormalOrder(t: Term): Term = t match {
         case Abstraction(param, body) => Abstraction(param, reduceNormalOrder(body))
         case Application(Abstraction(param, body), e) => subst(body)(param.name, e)
-        case Application(fun, arg) => Application(reduceNormalOrder(fun), arg)
+        case Application(fun, arg) => try {
+            Application(reduceNormalOrder(fun), arg)
+        } catch {
+            case e: NoRuleApplies => Application(fun, reduceNormalOrder(arg))
+        }
         case _ => throw NoRuleApplies(t)
     }
 

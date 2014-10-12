@@ -10,4 +10,7 @@ class TestNormalOrder extends FunSuite with Matchers with LambdaTest {
         "(\\y. y) x" shouldReduceTo "x"
     }
 
+    test("""((\x.x) a) ((\y.y) b)""") {
+        """((\x.x) a) ((\y.y) b)""".fullReduce("a b")(reducer)
+    }
 }
