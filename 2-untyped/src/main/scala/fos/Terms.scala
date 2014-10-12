@@ -5,8 +5,8 @@ import scala.util.parsing.input.Positional
 /** Abstract Syntax Trees for terms. */
 abstract class Term extends Positional {
     def isValue = this match {
-        case Variable(_) | Abstraction(_, _) => true
-        case Application(_, _) => false
+        case _: Abstraction => true
+        case _: Variable | _: Application => false
     }
 }
 
@@ -20,10 +20,11 @@ case class Abstraction(param: Variable, body: Term) extends Term {
 }
 
 case class Application(function: Term, argument: Term) extends Term {
-    override def toString: String = this match {
-        case Application(f, a) if f.isValue && a.isValue => f.toString + " " + a.toString
-        case Application(f, a) if f.isValue => f.toString + " (" + a.toString + ")"
-        case Application(f, a) if a.isValue => "(" + f.toString + ") " + a.toString
-        case Application(f, a) => "(" + f.toString + ") (" + a.toString + ")"
+    override def toString: String = {
+        def subterm(t: Term): String = t match {
+            case _: Application => s"($t)"
+            case _ => t.toString
+        }
+        s"${subterm(function)} ${subterm(argument)}"
     }
 }
