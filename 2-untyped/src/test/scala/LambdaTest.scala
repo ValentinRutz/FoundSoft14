@@ -1,6 +1,7 @@
 import fos.Untyped._
 import fos._
 import org.scalatest.Matchers
+import scala.annotation.tailrec
 
 trait LambdaTest {
     self: Matchers =>
@@ -10,8 +11,31 @@ trait LambdaTest {
     val x = Variable("x")
     val y = Variable("y")
     val z = Variable("z")
+    def parse(in: String): Term = {
+        val tokens = new lexical.Scanner(in)
+        phrase(Term)(tokens) match {
+            case Success(result, _) => result
+            case Failure(msg, _) => fail(msg)
+            case _ => fail("Error")
+        }
+    }
 
     implicit class TestingString(input: String) {
+
+        def eval(reduce: Term => Term)(t: Term): Term = try {
+            val next = reduce(t)
+            eval(reduce)(next)
+        } catch {
+            case NoRuleApplies(term) => t
+        }
+
+        def fullReduce(expectedTree: Term)(reduceFun: Term => Term): Unit = {
+            eval(reduceFun)(parse(input)) shouldBe expectedTree
+        }
+
+        def fullReduce(expectedTree: String)(reduceFun: Term => Term): Unit = {
+            fullReduce(parse(expectedTree))(reduceFun)
+        }
 
         def test(expectedTree: Term)(reduceFun: Term => Term): Unit = {
             val result = try {
@@ -32,15 +56,6 @@ trait LambdaTest {
 
         def shouldParseTo(equivalentForm: String): Unit = {
             test(equivalentForm)(identity)
-        }
-
-        def parse(in: String): Term = {
-            val tokens = new lexical.Scanner(in)
-            phrase(Term)(tokens) match {
-                case Success(result, _) => result
-                case Failure(msg, _) => fail(msg)
-                case _ => fail("Error")
-            }
         }
 
         def shouldReduceTo(expectedTree: Term): Unit = {
