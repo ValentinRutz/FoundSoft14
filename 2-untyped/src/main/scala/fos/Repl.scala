@@ -22,7 +22,6 @@ object Repl {
         """let snd = \p. p fls""",
         """let c0 = \s. \z. z""",
         """let scc = \n. \s. \z. s (n s z)""")
-    val PreFilled = UsefulDefs.foldLeft(Empty)((e, t) => eval(t, e))
     val Prompt: String = "lambda> "
 
     /** Maps from ParseResult types to Option */
@@ -55,7 +54,6 @@ object Repl {
       * Used to match a string that contains "exit" possibly surrounded by
       * spaces
       */
-
     object Exit extends Throwable {
         def unapply(s: String): Option[Unit] =
             if (s.trim == "exit") Some() else None
@@ -75,22 +73,38 @@ object Repl {
         }
     }
 
+    def pretty(t: Term, level: Int = 0): String = {
+        val string = t match {
+            case Variable(x) => x
+            case Application(a, b) => pretty(a) + "\n" + pretty(b)
+            case Abstraction(Variable(name), body) =>
+                name + " => \n" + pretty(body, 2)
+        }
+        string.split("\n").map(" " * level + _).mkString("\n")
+    }
+
     /**
-      *   Evaluate one line entered by the user and update the environment if
-      *   needed
+      * Evaluate one line entered by the user and update the environment if
+      * needed
+      *
+      * @param line The line to evaluate
+      * @param reducer The term evaluation function
+      * @param defs The environment that contains all the named abstractions
       */
-    def eval(line: String, defs: Environment): Environment =
+    def eval(line: String)(implicit reducer: Term => Term, defs: Environment): Environment =
         line match {
             case Exit() => throw Exit
             case Definition(let) => {
                 val (name, term) = let
-                val rewritten = rewrite(term)(defs)
+                val rewritten = rewrite(term)
+                val freeVariables = freeVars(rewritten)
 
-                if (!freeVars(rewritten).isEmpty) {
-                    println("Definitions can't have free variables")
+                if (!freeVariables.isEmpty) {
+                    val listing = freeVariables.mkString(" ")
+                    println(s"Definitions can't have free variables : $listing")
                     defs
                 } else {
-                    path(rewritten, reduceNormalOrder).last match {
+                    path(rewritten, reducer).last match {
                         case a: Abstraction =>
                             println(s"new definition : $name => $term")
                             update(defs, name -> a)
@@ -102,12 +116,13 @@ object Repl {
             }
             case Expression(expr) => {
                 println("Evaluating expression ...")
-                val reductions = path(rewrite(expr)(defs), reduceNormalOrder)
+                val reductions = path(rewrite(expr), reducer)
                 reductions.zipWithIndex foreach {
                     case (tree, i) => println(s"$i. $tree")
                 }
-                val names = possibleNames(reductions.last, defs)
+                val names = possibleNames(reductions.last)
                 println("Possible names for result : " + names.mkString(" "))
+                //println(pretty(reductions.last))
                 defs
             }
             case _ => {
@@ -128,13 +143,16 @@ object Repl {
         case (_, _) => false
     }
 
-    def possibleNames(t: Term, defs: Environment): Seq[String] = {
+    def possibleNames(t: Term)(implicit defs: Environment): Seq[String] = {
         defs.filter { case (name, body) => equals(t, body) }.map(_._1).toSeq
     }
 
-    @tailrec def repl(input: => String, defs: Environment = PreFilled): Unit = {
-        val newDefs = eval(input, defs)
-        repl(input, newDefs)
+    @tailrec def repl(inputSrc: => String)(implicit reducer: Term => Term, defs: Environment = Empty): Unit = {
+        /* Evaluate one line of user input */
+        val newDefs = eval(inputSrc)(reducer, defs)
+
+        /** Repeat loop */
+        repl(inputSrc)(reducer, newDefs)
     }
 
     /**
@@ -142,9 +160,11 @@ object Repl {
       *     :power
       *     fos.Repl.launch(repl.in.readLine _)
       */
-    def launch(readLine: (String => String)): Unit = {
+    def launch(readLine: (String => String),
+               reducer: Term => Term = reduceCallByValue): Unit = {
         try {
-            repl(readLine(Prompt))
+            val preFilled = UsefulDefs.foldLeft(Empty)((e, t) => eval(t)(reducer, e))
+            repl(readLine(Prompt))(reducer, preFilled)
         } catch {
             case Exit => println("Good bye")
         }
