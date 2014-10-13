@@ -148,9 +148,15 @@ object Repl {
     }
 
     @tailrec def repl(inputSrc: => String)(implicit reducer: Term => Term, defs: Environment = Empty): Unit = {
-        /* Evaluate one line of user input */
-        val newDefs = eval(inputSrc)(reducer, defs)
-
+        val newDefs = try {
+            /* Evaluate one line of user input */
+            eval(inputSrc)(reducer, defs)
+        } catch {
+            case Exit => throw Exit
+            case e: Throwable =>
+                e.printStackTrace()
+                defs
+        }
         /** Repeat loop */
         repl(inputSrc)(reducer, newDefs)
     }
@@ -162,9 +168,18 @@ object Repl {
       */
     def launch(readLine: (String => String),
                reducer: Term => Term = reduceCallByValue): Unit = {
+        /** Ignore empty lines and exit on Ctrl+D */
+        @tailrec def myReadLine: String = {
+            val optLine = readLine(Prompt)
+            if (optLine == null) throw Exit
+
+            val line = optLine.trim
+            if (line.isEmpty) myReadLine else line
+        }
+
         try {
             val preFilled = UsefulDefs.foldLeft(Empty)((e, t) => eval(t)(reducer, e))
-            repl(readLine(Prompt))(reducer, preFilled)
+            repl(myReadLine)(reducer, preFilled)
         } catch {
             case Exit => println("Good bye")
         }
