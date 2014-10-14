@@ -39,10 +39,15 @@ object Untyped extends StandardTokenParsers {
     case class NoRuleApplies(t: Term) extends Exception(t.toString)
 
     object freshName {
+        val Versioned = """([^\$]+)\$(\d+)""".r
         var counter = 0
         def apply(name: String): String = {
+            val realName = name match {
+                case Versioned(n, v) => n
+                case _ => name
+            }
             counter = counter + 1
-            name + counter
+            realName + "$" + counter
         }
 
         def apply(variable: Variable): Variable = {
@@ -106,14 +111,27 @@ object Untyped extends StandardTokenParsers {
     def reduceNormalOrder(t: Term): Term = t match {
         case Abstraction(param, body) => Abstraction(param, reduceNormalOrder(body))
         case Application(Abstraction(param, body), e) => subst(body)(param.name, e)
-        case Application(fun, arg) => Application(reduceNormalOrder(fun), arg)
+        case Application(fun, arg) => try {
+            Application(reduceNormalOrder(fun), arg)
+        } catch {
+            case e: NoRuleApplies => Application(fun, reduceNormalOrder(arg))
+        }
         case _ => throw NoRuleApplies(t)
     }
 
     /** Call by value reducer. */
     def reduceCallByValue(t: Term): Term = t match {
-        case Application(Abstraction(param, body), arg) => subst(body)(param.name, reduceCallByValue(arg))
-        case Application(fun, arg) => Application(fun, reduceCallByValue(arg))
+        /* E-APPABS */
+        case Application(Abstraction(param, body), arg) if arg.isValue =>
+            subst(body)(param.name, arg)
+
+        /* E-APP2 */
+        case Application(fun, arg) if fun.isValue =>
+            Application(fun, reduceCallByValue(arg))
+
+        /* E-APP1 */
+        case Application(fun, arg) =>
+            Application(reduceCallByValue(fun), arg)
         case _ => throw NoRuleApplies(t)
     }
 
