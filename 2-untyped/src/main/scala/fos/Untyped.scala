@@ -16,7 +16,7 @@ object Untyped extends StandardTokenParsers {
       * Term     ::= AbsOrVar { AbsOrVar }
       */
     def Term: Parser[Term] = (
-        rep(Abs | Var | Par) ^^ {
+        rep1(Abs | Var | Par) ^^ {
             _ reduceLeft (Application(_, _))
         }
         | failure("illegal start of term"))
