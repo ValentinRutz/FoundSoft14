@@ -184,5 +184,4 @@ object Repl {
             case Exit => println("Good bye")
         }
     }
-
 }

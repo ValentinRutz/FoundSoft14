@@ -58,4 +58,22 @@ class TestSubstAlpha extends FunSuite with Matchers {
         val sTree = Application(s, y)
         subst(tree)("x", s) should be(sTree)
     }
+
+    test("captured unused var") {
+        // [x->s] \s.s
+        resetFreshName
+        val tree = Abstraction(s, s)
+        val sTree = Abstraction(s1, s1)
+        subst(tree)("x", s) should be(sTree)
+    }
+
+    test("generated fresh name is not fresh") {
+        // [x->s] \s$1.\s.x
+        pending
+        val s2 = Variable("s$2")
+        resetFreshName
+        val tree = Abstraction(s1, Abstraction(s, x))
+        val sTree = Abstraction(s1, Abstraction(s2, x))
+        subst(tree)("x", s) should be(sTree)
+    }
 }
