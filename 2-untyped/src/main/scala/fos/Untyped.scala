@@ -95,7 +95,9 @@ object Untyped extends StandardTokenParsers {
           * Concretely makes substitution of alpha-conversion in given term.
           * This function may rename even variables shadowing the one that
           * has to be replaced, which does not change the behavior of the program
-          * but makes useless conversion
+          * but makes useless conversion.
+          * Note that this function avoids calling subst and prevents hidden infinite
+          * recursion.
           *
           * @param tree The term to be renamed
           * @param oldVar The variable that will be substituted
