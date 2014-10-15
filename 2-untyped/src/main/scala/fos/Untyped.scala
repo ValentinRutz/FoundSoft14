@@ -90,7 +90,26 @@ object Untyped extends StandardTokenParsers {
     def alpha(tree: Abstraction): Abstraction = {
         val Abstraction(variable, body) = tree
         val freshVar = freshName(variable)
-        Abstraction(freshVar, subst(body)(variable.name, freshVar))
+
+        /**
+          * Concretely makes substitution of alpha-conversion in given term.
+          * This function may rename even variables shadowing the one that
+          * has to be replaced, which does not change the behavior of the program
+          * but makes useless conversion
+          *
+          * @param tree The term to be renamed
+          * @param oldVar The variable that will be substituted
+          * @param freshVar The new variable for substitution
+          * @return term with substitution applied
+          */
+        def renameTree(tree: Term, oldVar: Variable, freshVar: Variable): Term = tree match {
+            case v: Variable if (v == oldVar) => freshVar
+            case v: Variable => v
+            case Abstraction(param, body) if (param == oldVar) => Abstraction(freshVar, renameTree(body, oldVar, freshVar))
+            case Abstraction(param, body) => Abstraction(param, renameTree(body, oldVar, freshVar))
+            case Application(fun, arg) => Application(renameTree(fun, oldVar, freshVar), renameTree(arg, oldVar, freshVar))
+        }
+        Abstraction(freshVar, renameTree(body, variable, freshVar))
     }
 
     /**
