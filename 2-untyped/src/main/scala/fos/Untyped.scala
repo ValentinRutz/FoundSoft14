@@ -39,6 +39,15 @@ object Untyped extends StandardTokenParsers {
     case class NoRuleApplies(t: Term) extends Exception(t.toString)
 
     object freshName {
+        var names: Set[String] = Set.empty
+        def namesOf(term: Term): Set[String] = term match {
+            case Variable(name) => Set(name)
+            case Abstraction(param, body) => namesOf(body) + param.name
+            case Application(fun, arg) => namesOf(fun) ++ namesOf(arg)
+        }
+        def addNames(term: Term): Unit = {
+            names = names ++ namesOf(term)
+        }
         val Versioned = """([^\$]+)\$(\d+)""".r
         var counter = 0
         def apply(name: String): String = {
@@ -47,7 +56,12 @@ object Untyped extends StandardTokenParsers {
                 case _ => name
             }
             counter = counter + 1
-            realName + "$" + counter
+            val newName = (realName + "$" + counter)
+            if (names contains newName) freshName(realName)
+            else {
+                names = names + newName
+                newName
+            }
         }
 
         def apply(variable: Variable): Variable = {
@@ -108,31 +122,37 @@ object Untyped extends StandardTokenParsers {
       *  @param t the initial term
       *  @return  the reduced term
       */
-    def reduceNormalOrder(t: Term): Term = t match {
-        case Abstraction(param, body) => Abstraction(param, reduceNormalOrder(body))
-        case Application(Abstraction(param, body), e) => subst(body)(param.name, e)
-        case Application(fun, arg) => try {
-            Application(reduceNormalOrder(fun), arg)
-        } catch {
-            case e: NoRuleApplies => Application(fun, reduceNormalOrder(arg))
+    def reduceNormalOrder(t: Term): Term = {
+        freshName.addNames(t)
+        t match {
+            case Abstraction(param, body) => Abstraction(param, reduceNormalOrder(body))
+            case Application(Abstraction(param, body), e) => subst(body)(param.name, e)
+            case Application(fun, arg) => try {
+                Application(reduceNormalOrder(fun), arg)
+            } catch {
+                case e: NoRuleApplies => Application(fun, reduceNormalOrder(arg))
+            }
+            case _ => throw NoRuleApplies(t)
         }
-        case _ => throw NoRuleApplies(t)
     }
 
     /** Call by value reducer. */
-    def reduceCallByValue(t: Term): Term = t match {
-        /* E-APPABS */
-        case Application(Abstraction(param, body), arg) if arg.isValue =>
-            subst(body)(param.name, arg)
+    def reduceCallByValue(t: Term): Term = {
+        freshName.addNames(t)
+        t match {
+            /* E-APPABS */
+            case Application(Abstraction(param, body), arg) if arg.isValue =>
+                subst(body)(param.name, arg)
 
-        /* E-APP2 */
-        case Application(fun, arg) if fun.isValue =>
-            Application(fun, reduceCallByValue(arg))
+            /* E-APP2 */
+            case Application(fun, arg) if fun.isValue =>
+                Application(fun, reduceCallByValue(arg))
 
-        /* E-APP1 */
-        case Application(fun, arg) =>
-            Application(reduceCallByValue(fun), arg)
-        case _ => throw NoRuleApplies(t)
+            /* E-APP1 */
+            case Application(fun, arg) =>
+                Application(reduceCallByValue(fun), arg)
+            case _ => throw NoRuleApplies(t)
+        }
     }
 
     /**

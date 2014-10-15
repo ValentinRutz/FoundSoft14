@@ -26,7 +26,10 @@ class TestSubstAlpha extends FunSuite with Matchers {
 
     val s1: Variable = Variable("s$1")
 
-    def resetFreshName: Unit = freshName.counter = 0
+    def resetFreshName: Unit = {
+        freshName.names = Set.empty
+        freshName.counter = 0
+    }
 
     test("var substitution") {
         subst(x)("x", s) should be(s)
@@ -69,11 +72,11 @@ class TestSubstAlpha extends FunSuite with Matchers {
 
     test("generated fresh name is not fresh") {
         // [x->s] \s$1.\s.x
-        pending
         val s2 = Variable("s$2")
         resetFreshName
         val tree = Abstraction(s1, Abstraction(s, x))
-        val sTree = Abstraction(s1, Abstraction(s2, x))
+        freshName.addNames(tree)
+        val sTree = Abstraction(s1, Abstraction(s2, s))
         subst(tree)("x", s) should be(sTree)
     }
 }
