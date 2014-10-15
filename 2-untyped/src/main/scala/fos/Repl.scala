@@ -21,7 +21,16 @@ object Repl {
         """let fst = \p. p tru""",
         """let snd = \p. p fls""",
         """let c0 = \s. \z. z""",
-        """let scc = \n. \s. \z. s (n s z)""")
+        """let c1 = \s. \z. s z""",
+        """let c2 = \s. \z. s (s z)""",
+        """let scc = \n. \s. \z. s (n s z)""",
+        """let add = \n. \m. \s. \z. n s (m s z)""",
+        """let mul = \n. \m. \s. \z. n (m s) z""",
+        """let fix = \f.(\x. f (\y. x x y)) (\x. f (\y. x x y))""",
+        """let iszero = \n. n (\x. fls) tru""",
+        """let sub = \n. \m. fst (m snd (n (\p. pair (scc (fst p)) p) (fix \zZ. \b. b c0 zZ)))""",
+        """let prd = \n. sub n c1""",
+        """let equal = \n.\m. and (iszero (sub n m)) (iszero (sub m n))""")
     val Prompt: String = "lambda> "
 
     /** Maps from ParseResult types to Option */
