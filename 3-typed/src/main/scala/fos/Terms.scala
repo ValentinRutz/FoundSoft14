@@ -47,7 +47,7 @@ case class Variable(name: String) extends Term {
     override def toString() = name
 }
 
-case class Abstraction(param: Variable, typ: Type, body: Type) extends Term {
+case class Abstraction(param: Variable, typ: Type, body: Term) extends Term {
     override def toString() =
         s"""\$param: $typ.body"""
 }
