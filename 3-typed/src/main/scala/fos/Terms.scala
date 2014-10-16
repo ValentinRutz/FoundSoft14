@@ -31,6 +31,13 @@ case class Pred(term: Term) extends Term {
     }
 }
 
+case class IsZero(term: Term) extends Term {
+    override def toString() = term match {
+        case Application(_, _) => s"isZero ($term)"
+        case _ => s"isZero $term"
+    }
+}
+
 case class If(c: Term, t: Term, e: Term) extends Term {
     override def toString() =
         s"if $c then $t else $e"
