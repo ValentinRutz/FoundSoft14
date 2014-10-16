@@ -17,7 +17,6 @@ object SimplyTyped extends StandardTokenParsers {
       * Term     ::= SimpleTerm { SimpleTerm }
       */
     def Term: Parser[Term] = positioned(
-        //   ... To complete ... 
         failure("illegal start of term"))
 
     /**
@@ -39,7 +38,7 @@ object SimplyTyped extends StandardTokenParsers {
     def SimpleTerm: Parser[Term] = positioned(
         "true" ^^^ True
             | "false" ^^^ False
-            //   ... To complete ... 
+            //   ... To complete ... with let and pair
             | failure("illegal start of simple term"))
 
     /**

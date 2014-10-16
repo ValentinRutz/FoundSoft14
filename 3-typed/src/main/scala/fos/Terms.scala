@@ -12,10 +12,52 @@ case object True extends Term {
 case object False extends Term {
     override def toString() = "false"
 }
+
 case object Zero extends Term {
     override def toString() = "0"
 }
-//   ... To complete ... 
+
+case class Succ(term: Term) extends Term {
+    override def toString() = term match {
+        case Application(_, _) => s"succ ($term)"
+        case _ => s"succ $term"
+    }
+}
+
+case class Pred(term: Term) extends Term {
+    override def toString() = term match {
+        case Application(_, _) => s"pred ($term)"
+        case _ => s"pred $term"
+    }
+}
+
+case class If(c: Term, t: Term, e: Term) extends Term {
+    override def toString() =
+        s"if $c then $t else $e"
+}
+
+case class Variable(name: String) extends Term {
+    override def toString() = name
+}
+
+case class Abstraction(param: Variable, typ: Type, body: Type) extends Term {
+    override def toString() =
+        s"""\$param: $typ.body"""
+}
+
+case class Application(fun: Term, arg: Term) extends Term {
+    private val parFun: String = fun match {
+        case _: Abstraction | _: If => s"($fun)"
+        case _ => s"$fun"
+    }
+    private val parArg: String = arg match {
+        case _: Application => s"($arg)"
+        case _ => s"$arg"
+    }
+    override def toString() = parFun + " " + parArg
+}
+
+// TODO complete to implement 'let' and 'pair'
 /** Abstract Syntax Trees for types. */
 abstract class Type extends Term
 
