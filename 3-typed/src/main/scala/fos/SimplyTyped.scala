@@ -54,10 +54,18 @@ object SimplyTyped extends StandardTokenParsers {
       * Type       ::= SimpleType [ "->" Type ]
       */
     def Type: Parser[Type] = positioned(
-        //   ... To complete ... 
-        failure("illegal start of type"))
+        SimpleType ~ opt("->" ~> Type) ^^ {
+            case from ~ Some(to) =>
+                TypeFun(from, to)
+            case typ ~ None => typ
+        }
+            | failure("illegal start of type"))
 
-    //   ... To complete ... 
+    def SimpleType: Parser[Type] = positioned(
+        "Bool" ^^^ TypeBool
+            | "Nat" ^^^ TypeNat
+            | "(" ~> Type <~ ")"
+            | failure("illegal start of type"))
 
     /** Thrown when no reduction rule applies to the given term. */
     case class NoRuleApplies(t: Term) extends Exception(t.toString)
@@ -73,19 +81,56 @@ object SimplyTyped extends StandardTokenParsers {
 
     /** Is the given term a numeric value? */
     def isNumericVal(t: Term): Boolean = t match {
-        //   ... To complete ... 
+        case Zero => true
+        case Succ(t) => isNumericVal(t)
         case _ => false
     }
 
     /** Is the given term a value? */
     def isValue(t: Term): Boolean = t match {
-        //   ... To complete ... 
+        case True | False | Abstraction(_, _, _) => true
+        case nv if (isNumericVal(nv)) => true
         case _ => false
+    }
+
+    object freshName {
+        var names: Set[String] = Set.empty
+        def namesOf(term: Term): Set[String] = term match {
+            case Variable(name) => Set(name)
+            case Abstraction(param, typ, body) => namesOf(body) + param.name
+            case Application(fun, arg) => namesOf(fun) ++ namesOf(arg)
+            case Succ(term) => namesOf(term)
+            case Pred(term) => namesOf(term)
+            case IsZero(term) => namesOf(term)
+            case If(c, t, e) => namesOf(c) ++ namesOf(t) ++ namesOf(e)
+        }
+        def addNames(term: Term): Unit = {
+            names = names ++ namesOf(term)
+        }
+        val Versioned = """([^\$]+)\$(\d+)""".r
+        var counter = 0
+        def apply(name: String): String = {
+            val realName = name match {
+                case Versioned(n, v) => n
+                case _ => name
+            }
+            counter = counter + 1
+            val newName = (realName + "$" + counter)
+            if (names contains newName) freshName(realName)
+            else {
+                names = names + newName
+                newName
+            }
+        }
+
+        def apply(variable: Variable): Variable = {
+            val Variable(name) = variable
+            Variable(freshName(name))
+        }
     }
 
     /** Call by value reducer. */
     def reduce(t: Term): Term = t match {
-        //   ... To complete ... 
         case _ =>
             throw NoRuleApplies(t)
     }
