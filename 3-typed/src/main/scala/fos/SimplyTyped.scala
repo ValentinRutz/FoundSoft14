@@ -38,6 +38,15 @@ object SimplyTyped extends StandardTokenParsers {
     def SimpleTerm: Parser[Term] = positioned(
         "true" ^^^ True
             | "false" ^^^ False
+            | ("if" ~> Term) ~ ("then" ~> Term) ~ ("else" ~> Term) ^^ { case c ~ t ~ e => If(c, t, e) }
+            | "succ" ~> Term ^^ Succ
+            | "pred" ~> Term ^^ Pred
+            | "iszero" ~> Term ^^ IsZero
+            | numericLit ^^ { case e => Iterator.iterate[Term](Zero)(Succ).toStream(e.toInt) }
+            | ("\\" ~> ident) ~ (":" ~> Type) ~ ("." ~> Term) ^^ {
+                case param ~ typ ~ body => Abstraction(Variable(param), typ, body)
+            }
+            | "(" ~> Term <~ ")"
             //   ... To complete ... with let and pair
             | failure("illegal start of simple term"))
 
