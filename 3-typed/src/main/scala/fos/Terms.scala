@@ -71,4 +71,14 @@ abstract class Type extends Term
 case object TypeBool extends Type {
     override def toString() = "Bool"
 }
-//   ... To complete ... 
+
+case object TypeNat extends Type {
+    override def toString() = "Nat"
+}
+
+case class TypeFun(from: Type, to: Type) extends Type {
+    override def toString() = from match {
+        case _: TypeFun => s"($from)->$to"
+        case _ => s"$from->$to"
+    }
+}
