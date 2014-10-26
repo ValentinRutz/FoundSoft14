@@ -17,7 +17,9 @@ object SimplyTyped extends StandardTokenParsers {
       * Term     ::= SimpleTerm { SimpleTerm }
       */
     def Term: Parser[Term] = positioned(
-        failure("illegal start of term"))
+        // TODO: Add a complex term class?? Block class??
+        SimpleTerm <~ ("{" ~> SimpleTerm <~ "}")
+            | failure("illegal start of term"))
 
     /**
       * SimpleTerm ::= "true"
@@ -48,6 +50,12 @@ object SimplyTyped extends StandardTokenParsers {
             }
             | "(" ~> Term <~ ")"
             //   ... To complete ... with let and pair
+            | ("let" ~> ident) ~ (":" ~> Type) ~ ("=" ~> Term) ^^ {
+                case param ~ typ ~ expr => Let(Variable(param), typ, expr)
+            }
+            | ("{" ~> Term <~ ",") ~ (Term <~ "}") ^^ {
+                case fst ~ snd => Pair(fst, snd)
+            }
             | failure("illegal start of simple term"))
 
     /**
@@ -135,8 +143,9 @@ object SimplyTyped extends StandardTokenParsers {
       * @param t the term to compute
       * @return the set of free variables in t
       */
+    // TODO: Add cases for Let, Pair, Fst, Snd
     def freeVars(t: Term): Set[Variable] = t match {
-        case x @ Variable(_) => Set(x)
+        case x: Variable => Set(x)
         case Abstraction(x, typ, t1) => freeVars(t1) - x
         case Application(t1, t2) => freeVars(t1) ++ freeVars(t2)
         case Succ(t) => freeVars(t)
@@ -168,17 +177,25 @@ object SimplyTyped extends StandardTokenParsers {
           * @param freshVar The new variable for substitution
           * @return term with substitution applied
           */
+        // TODO: Add cases for Let, Pair, Fst, Snd
         def renameTree(tree: Term)(implicit oldFresh: (Variable, Variable)): Term = {
             val (oldVar, freshVar) = oldFresh
             tree match {
-                case v: Variable if (v == oldVar) => freshVar
+                case v: Variable if (v == oldVar) =>
+                    freshVar
                 case v: Variable => v
-                case Abstraction(param, typ, body) if (param == oldVar) => Abstraction(freshVar, typ, renameTree(body))
-                case Abstraction(param, typ, body) => Abstraction(param, typ, renameTree(body))
-                case Application(fun, arg) => Application(renameTree(fun), renameTree(arg))
-                case Succ(term) => Succ(renameTree(term))
-                case Pred(term) => Pred(renameTree(term))
-                case IsZero(term) => IsZero(renameTree(term))
+                case Abstraction(param, typ, body) if (param == oldVar) =>
+                    Abstraction(freshVar, typ, renameTree(body))
+                case Abstraction(param, typ, body) =>
+                    Abstraction(param, typ, renameTree(body))
+                case Application(fun, arg) =>
+                    Application(renameTree(fun), renameTree(arg))
+                case Succ(term) =>
+                    Succ(renameTree(term))
+                case Pred(term) =>
+                    Pred(renameTree(term))
+                case IsZero(term) =>
+                    IsZero(renameTree(term))
                 case If(c, t, e) =>
                     If(renameTree(c), renameTree(t), renameTree(e))
             }
@@ -195,6 +212,7 @@ object SimplyTyped extends StandardTokenParsers {
       * @param s the term to substitute variable with
       * @return a new corresponding tree with substitution applied
       */
+    // TODO: Add cases for Let, Pair, Fst, Snd
     def subst(tree: Term)(implicit x: String, s: Term): Term = tree match {
         case Variable(name) if (name == x) => s
         case Application(fun, arg) => Application(subst(fun), subst(arg))
@@ -229,10 +247,36 @@ object SimplyTyped extends StandardTokenParsers {
       *  @param t   the given term
       *  @return    the computed type
       */
+    // TODO: Check why TypeError can' be used as a return expression or if it is necessary to return it
     def typeof(ctx: Context, t: Term): Type = t match {
-        case True | False =>
+        // Simple terms
+        // Booleans
+        case True | False | IsZero(_) =>
             TypeBool
-        //   ... To complete ... 
+        // Natural integers
+        case Zero | Succ(_) | Pred(_) =>
+            TypeNat
+        case If(c, t, e) if typeof(ctx, c) == TypeBool =>
+            if (typeof(ctx, t) == typeof(ctx, e))
+                typeof(ctx, e)
+            else
+                TypeError(t.pos, s"""\"Then\" and \"Else\" part of If expression"
+              do not share the same type""")
+        case Abstraction(Variable(param), typParam, body) =>
+            typeof((param, typParam) :: ctx, body)
+        case v @ Variable(name) =>
+            ctx.find(e => e._1 == name).getOrElse(TypeError(v.pos,
+                s"Variable $name does not exist in context $ctx"))._2
+        case Let(_, typ, _) =>
+            typ
+        case Pair(fst, snd) =>
+            TypePair(typeof(ctx, fst), typeof(ctx, snd))
+        case Fst(Pair(fst, snd)) =>
+            typeof(ctx, fst)
+        case Snd(Pair(fst, snd)) =>
+            typeof(ctx, snd)
+        case _ =>
+            TypeError(t.pos, s"Illegally typed expression: $t")
     }
 
     /**

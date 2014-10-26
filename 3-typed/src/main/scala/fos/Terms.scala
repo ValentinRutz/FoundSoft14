@@ -65,6 +65,22 @@ case class Application(fun: Term, arg: Term) extends Term {
 }
 
 // TODO complete to implement 'let' and 'pair'
+case class Let(ident: Variable, typ: Type, expr: Term) extends Term {
+    override def toString() = s"""let $ident: $typ = $expr"""
+}
+
+case class Pair(fst: Term, snd: Term) extends Term {
+    override def toString() = s"""{ $fst, $snd }"""
+}
+
+case class Fst(pair: Pair) extends Term {
+    override def toString() = s"""fst $pair"""
+}
+
+case class Snd(pair: Pair) extends Term {
+    override def toString() = s"""snd $pair"""
+}
+
 /** Abstract Syntax Trees for types. */
 abstract class Type extends Term
 
@@ -81,4 +97,8 @@ case class TypeFun(from: Type, to: Type) extends Type {
         case _: TypeFun => s"($from)->$to"
         case _ => s"$from->$to"
     }
+}
+
+case class TypePair(fst: Type, snd: Type) extends Type {
+    override def toString() = s"$fst x $snd"
 }
