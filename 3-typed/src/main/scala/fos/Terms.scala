@@ -68,7 +68,7 @@ case class Application(fun: Term, arg: Term) extends Term {
 }
 
 case class Pair(fst: Term, snd: Term) extends Term {
-    override def toString = s"""{ $fst, $snd }"""
+    override def toString = s"""{$fst, $snd}"""
 }
 
 case class Fst(pair: Term) extends Term {
