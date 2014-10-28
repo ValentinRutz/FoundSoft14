@@ -216,18 +216,19 @@ object SimplyTyped extends StandardTokenParsers {
     }
 
     /** Call by value reducer. */
-    // Note: many points are simplified from untyped reducer, since bad input does not typechecks
+    // Note: many points are simplified from untyped reducer, since bad input does not typecheck
     def reduce(t: Term): Term = t match {
         // COMPUTATION
         case If(True, t, _) => t
         case If(False, _, f) => f
         case IsZero(Zero) => True
-        case IsZero(Succ(_)) =>
-            False
+        case IsZero(Succ(_)) => False
         case Pred(Zero) => Zero
         case Pred(Succ(v)) => v
         case Application(Abstraction(param, typ, body), Value(value)) =>
             subst(body)(param.name, value)
+        case Fst(Pair(Value(fst), Value(_))) => fst
+        case Snd(Pair(Value(_), Value(snd))) => snd
         // CONGRUENCE
         case If(c, t, e) => If(reduce(c), t, e)
         case IsZero(t) => IsZero(reduce(t))
@@ -236,7 +237,11 @@ object SimplyTyped extends StandardTokenParsers {
         case Application(Value(v), t) => Application(v, reduce(t))
         case Application(t1, t2) =>
             Application(reduce(t1), t2)
-            throw NoRuleApplies(t)
+        case Fst(Pair(Value(fst), snd)) => Fst(Pair(fst, reduce(snd)))
+        case Snd(Pair(Value(fst), snd)) => Snd(Pair(fst, reduce(snd)))
+        case Fst(Pair(fst, snd)) => Fst(Pair(reduce(fst), snd))
+        case Snd(Pair(fst, snd)) => Snd(Pair(reduce(fst), snd))
+        case _ => throw NoRuleApplies(t)
     }
 
     /**
