@@ -54,8 +54,9 @@ object SimplyTyped extends StandardTokenParsers {
             }
             | "(" ~> Term <~ ")"
             //   ... To complete ... with let and pair
-            | ("let" ~> ident) ~ (":" ~> Type) ~ ("=" ~> Term) ^^ {
-                case param ~ typ ~ expr => Let(Variable(param), typ, expr)
+            | ("let" ~> ident) ~ (":" ~> Type) ~ ("=" ~> Term) ~ ("in" ~> Term) ^^ {
+                case param ~ typ ~ expr ~ term =>
+                    Application(Abstraction(Variable(param), typ, expr), term)
             }
             | ("{" ~> Term <~ ",") ~ (Term <~ "}") ^^ {
                 case fst ~ snd => Pair(fst, snd)
@@ -279,7 +280,8 @@ object SimplyTyped extends StandardTokenParsers {
         case IsZero(subterm) if typeof(ctx, subterm) == TypeNat =>
             TypeBool
         // Natural integers
-        case Zero => TypeNat
+        case Zero =>
+            TypeNat
         case Succ(subterm) if typeof(ctx, subterm) == TypeNat =>
             TypeNat
         case Pred(subterm) if typeof(ctx, subterm) == TypeNat =>
@@ -289,18 +291,17 @@ object SimplyTyped extends StandardTokenParsers {
             typeof(ctx, thenn)
         case Variable(name) if ctx.exists(_._1 == name) =>
             (ctx find (_._1 == name)).get._2
+        case Abstraction(Variable(param), typ, body) =>
+            TypeFun(typ, typeof((param, typ) :: ctx, body))
+        case Application(t1, t2) =>
+            typeof(ctx, t1) match {
+                case TypeFun(from, to) if to == typeof(ctx, t2) =>
+                    to
+                case _ =>
+                    throw TypeError(t1.pos, s"""Left term should be
+                  an abstraction""")
+            }
         /*
-        case If(c, t, e) if typeof(ctx, c) == TypeBool =>
-            if (typeof(ctx, t) == typeof(ctx, e))
-                typeof(ctx, e)
-            else
-                throw TypeError(t.pos, s"""\"Then\" and \"Else\" part of If"
-                           expression do not share the same type""")
-        case Abstraction(Variable(param), typParam, body) =>
-            TypeFun(typParam, typeof((param, typParam) :: ctx, body))
-        case v @ Variable(name) =>
-            ctx.find(e: (String, Type) => e._1 == name).getOrElse(
-                throw TypeError(v.pos, ""))._2
         case Let(_, typ, _) =>
             typ
         case Pair(fst, snd) =>
