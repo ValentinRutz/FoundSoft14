@@ -35,11 +35,11 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
     }
 
     test("fst test") {
-        "fst {0, tru}" shouldReduceTo "0"
+        "fst {0, true}" shouldReduceTo "0"
     }
 
     test("snd test") {
-        "snd {0, tru}" shouldReduceTo "tru"
+        "snd {0, true}" shouldReduceTo "true"
     }
 
     // CONGRUENCE
