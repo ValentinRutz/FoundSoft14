@@ -113,4 +113,3 @@ object NumericValue {
         case _ => None
     }
 }
-

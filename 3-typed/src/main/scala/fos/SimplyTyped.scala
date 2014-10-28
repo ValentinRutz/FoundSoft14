@@ -127,6 +127,9 @@ object SimplyTyped extends StandardTokenParsers {
         case Pred(t) => freeVars(t)
         case IsZero(t) => freeVars(t)
         case If(c, t, e) => freeVars(c) ++ freeVars(t) ++ freeVars(e)
+        case Pair(fst, snd) => freeVars(fst) ++ freeVars(snd)
+        case Fst(p) => freeVars(p)
+        case Snd(p) => freeVars(p)
     }
 
     /**
@@ -173,6 +176,9 @@ object SimplyTyped extends StandardTokenParsers {
                     IsZero(renameTree(term))
                 case If(c, t, e) =>
                     If(renameTree(c), renameTree(t), renameTree(e))
+                case Pair(fst, snd) => Pair(renameTree(fst), renameTree(snd))
+                case Fst(p) => Fst(renameTree(p))
+                case Snd(p) => Snd(renameTree(p))
             }
         }
         Abstraction(freshVar, typ, renameTree(body)((variable, freshVar)))
@@ -208,9 +214,6 @@ object SimplyTyped extends StandardTokenParsers {
         case Snd(pair) => Snd(subst(pair))
         case _ => tree
     }
-
-    // TODO : Confirm that Environment is not affected by alpha-conversion and substitutions !
-    // TODO : Don't forget previous TODO
 
     /** Call by value reducer. */
     // Note: many points are simplified from untyped reducer, since bad input does not typechecks
