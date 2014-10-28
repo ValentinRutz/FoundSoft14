@@ -251,8 +251,16 @@ object SimplyTyped extends StandardTokenParsers {
             False
         case Pred(Zero) => Zero
         case Pred(Succ(v)) => v
-        case Application(Abstraction(param, typ, body), value) =>
+        case Application(Abstraction(param, typ, body), Value(value)) =>
             subst(body)(param.name, value)
+        // CONGRUENCE
+        case If(c, t, e) => If(reduce(c), t, e)
+        case IsZero(t) => IsZero(reduce(t))
+        case Pred(t) => Pred(reduce(t))
+        case Succ(t) => Succ(reduce(t))
+        case Application(Value(v), t) => Application(v, reduce(t))
+        case Application(t1, t2) =>
+            Application(reduce(t1), t2)
             throw NoRuleApplies(t)
     }
 
