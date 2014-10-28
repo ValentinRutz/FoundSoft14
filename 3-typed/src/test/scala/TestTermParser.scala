@@ -53,9 +53,15 @@ class TestTermParser extends FunSuite with Matchers with LambdaTest {
     test("Parse succ") {
         "succ 0" shouldParseTo Succ(Zero)
     }
+
     test("Parse pred") {
         "pred 0" shouldParseTo Pred(Zero)
     }
+
+    test("Parse pred succ 0") {
+        "pred succ 0" shouldParseTo Pred(Succ(Zero))
+    }
+
     test("Parse Int") {
         "1" shouldParseTo Succ(Zero)
         "2" shouldParseTo "succ 1"
