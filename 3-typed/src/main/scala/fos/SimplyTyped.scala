@@ -18,7 +18,9 @@ object SimplyTyped extends StandardTokenParsers {
       */
     def Term: Parser[Term] = positioned(
         // TODO: Add a complex term class?? Block class??
-        SimpleTerm <~ ("{" ~> SimpleTerm <~ "}")
+        rep1(SimpleTerm) ^^ {
+            _ reduceLeft (Application(_, _))
+        }
             | failure("illegal start of term"))
 
     /**
@@ -40,11 +42,14 @@ object SimplyTyped extends StandardTokenParsers {
     def SimpleTerm: Parser[Term] = positioned(
         "true" ^^^ True
             | "false" ^^^ False
-            | ("if" ~> Term) ~ ("then" ~> Term) ~ ("else" ~> Term) ^^ { case c ~ t ~ e => If(c, t, e) }
+            | numericLit ^^ { case e => Iterator.iterate[Term](Zero)(Succ).toStream(e.toInt) }
             | "succ" ~> Term ^^ Succ
             | "pred" ~> Term ^^ Pred
             | "iszero" ~> Term ^^ IsZero
-            | numericLit ^^ { case e => Iterator.iterate[Term](Zero)(Succ).toStream(e.toInt) }
+            | ("if" ~> Term) ~ ("then" ~> Term) ~ ("else" ~> Term) ^^ { case c ~ t ~ e => If(c, t, e) }
+            | ident ^^ {
+                case ident => Variable(ident)
+            }
             | ("\\" ~> ident) ~ (":" ~> Type) ~ ("." ~> Term) ^^ {
                 case param ~ typ ~ body => Abstraction(Variable(param), typ, body)
             }
@@ -56,6 +61,8 @@ object SimplyTyped extends StandardTokenParsers {
             | ("{" ~> Term <~ ",") ~ (Term <~ "}") ^^ {
                 case fst ~ snd => Pair(fst, snd)
             }
+            | "fst" ~> Term ^^ Fst
+            | "snd" ~> Term ^^ Snd
             | failure("illegal start of simple term"))
 
     /**
@@ -253,21 +260,22 @@ object SimplyTyped extends StandardTokenParsers {
         // Booleans
         case True | False =>
           TypeBool
-        case IsZero(subterm) if typeof(subterm) == TypeNat =>
+        case IsZero(subterm) if typeof(ctx, subterm) == TypeNat =>
             TypeBool
         // Natural integers
         case Zero | Succ(_) | Pred(_) =>
             TypeNat
+
         case If(c, t, e) if typeof(ctx, c) == TypeBool =>
             if (typeof(ctx, t) == typeof(ctx, e))
                 typeof(ctx, e)
             else
-                TypeError(t.pos, s"""\"Then\" and \"Else\" part of If expression"
-              do not share the same type""")
+                throw TypeError(t.pos, s"""\"Then\" and \"Else\" part of If"
+                           expression do not share the same type""")
         case Abstraction(Variable(param), typParam, body) =>
           TypeFun(typParam, typeof((param, typParam) :: ctx, body))
         case v @ Variable(name) =>
-            ctx.find(e => e._1 == name).get._2
+            ctx.find(e: (String, Type) => e._1 == name).get._2
         case Let(_, typ, _) =>
             typ
         case Pair(fst, snd) =>
@@ -277,7 +285,8 @@ object SimplyTyped extends StandardTokenParsers {
         case Snd(Pair(fst, snd)) =>
             typeof(ctx, snd)
         case _ =>
-            TypeError(t.pos, s"Illegally typed expression: $t")
+            throw TypeError(t.pos, s"Illegally typed expression: $t")
+
     }
 
     /**

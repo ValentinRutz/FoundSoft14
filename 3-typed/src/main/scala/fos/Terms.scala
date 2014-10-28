@@ -73,11 +73,11 @@ case class Pair(fst: Term, snd: Term) extends Term {
     override def toString() = s"""{ $fst, $snd }"""
 }
 
-case class Fst(pair: Pair) extends Term {
+case class Fst(pair: Term) extends Term {
     override def toString() = s"""fst $pair"""
 }
 
-case class Snd(pair: Pair) extends Term {
+case class Snd(pair: Term) extends Term {
     override def toString() = s"""snd $pair"""
 }
 
