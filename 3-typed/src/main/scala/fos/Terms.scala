@@ -33,8 +33,8 @@ case class Pred(term: Term) extends Term {
 
 case class IsZero(term: Term) extends Term {
     override def toString = term match {
-        case Application(_, _) => s"isZero ($term)"
-        case _ => s"isZero $term"
+        case Application(_, _) => s"iszero ($term)"
+        case _ => s"iszero $term"
     }
 }
 
@@ -49,7 +49,7 @@ case class Variable(name: String) extends Term {
 
 case class Abstraction(param: Variable, typ: Type, body: Term) extends Term {
     override def toString =
-        s"""\\$param: $typ.body"""
+        s"\\$param: $typ.$body"
 }
 
 case class Application(fun: Term, arg: Term) extends Term {
@@ -61,7 +61,7 @@ case class Application(fun: Term, arg: Term) extends Term {
         case _: Application => s"($arg)"
         case _ => s"$arg"
     }
-    override def toString = "$parFun $parArg"
+    override def toString = s"$parFun $parArg"
 }
 
 case class Pair(fst: Term, snd: Term) extends Term {
@@ -95,7 +95,13 @@ case class TypeFun(from: Type, to: Type) extends Type {
 }
 
 case class TypePair(fst: Type, snd: Type) extends Type {
-    override def toString = s"$fst*$snd"
+    override def toString = (fst, snd) match {
+        case (TypeFun(_, _) | TypePair(_, _), TypeFun(_, _) | TypePair(_, _)) =>
+            s"($fst)*($snd)"
+        case (_, TypeFun(_, _) | TypePair(_, _)) => s"$fst*($snd)"
+        case (TypeFun(_, _) | TypePair(_, _), _) => s"($fst)*$snd"
+        case _ => s"$fst*$snd"
+    }
 }
 
 object Value {
