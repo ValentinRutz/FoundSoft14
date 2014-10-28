@@ -24,10 +24,10 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
 
     test("pred 0") {
         "pred 0" shouldReduceTo "0"
-    }
 
+    }
     test("pred succ nv") {
-        for (i <- 1 to 10) s"pred succ $i" shouldReduceTo "$i"
+        for (i <- 1 to 10) s"pred succ $i" shouldReduceTo s"$i"
     }
 
     test("(\\x: T. t) v") {
