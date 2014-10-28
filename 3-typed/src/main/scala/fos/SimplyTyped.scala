@@ -94,34 +94,7 @@ object SimplyTyped extends StandardTokenParsers {
     /** The context is a list of variable names paired with their type. */
     type Context = List[(String, Type)]
 
-    /** Is the given term a numeric value? */
-    def isNumericVal(t: Term): Boolean = t match {
-        case Zero => true
-        case Succ(t) => isNumericVal(t)
-        case _ => false
-    }
-
-    /** Is the given term a value? */
-    def isValue(t: Term): Boolean = t match {
-        case True | False | Abstraction(_, _, _) => true
-        case nv if (isNumericVal(nv)) => true
-        case _ => false
-    }
-
     object freshName {
-        var names: Set[String] = Set.empty
-        def namesOf(term: Term): Set[String] = term match {
-            case Variable(name) => Set(name)
-            case Abstraction(param, typ, body) => namesOf(body) + param.name
-            case Application(fun, arg) => namesOf(fun) ++ namesOf(arg)
-            case Succ(term) => namesOf(term)
-            case Pred(term) => namesOf(term)
-            case IsZero(term) => namesOf(term)
-            case If(c, t, e) => namesOf(c) ++ namesOf(t) ++ namesOf(e)
-        }
-        def addNames(term: Term): Unit = {
-            names = names ++ namesOf(term)
-        }
         val Versioned = """([^\$]+)\$(\d+)""".r
         var counter = 0
         def apply(name: String): String = {
@@ -130,12 +103,7 @@ object SimplyTyped extends StandardTokenParsers {
                 case _ => name
             }
             counter = counter + 1
-            val newName = (realName + "$" + counter)
-            if (names contains newName) freshName(realName)
-            else {
-                names = names + newName
-                newName
-            }
+            realName + "$" + counter
         }
 
         def apply(variable: Variable): Variable = {
@@ -235,6 +203,9 @@ object SimplyTyped extends StandardTokenParsers {
         case Pred(term) => Pred(subst(term))
         case IsZero(term) => IsZero(subst(term))
         case If(c, t, e) => If(subst(c), subst(t), subst(e))
+        case Pair(fst, snd) => Pair(subst(fst), subst(snd))
+        case Fst(pair) => Fst(subst(pair))
+        case Snd(pair) => Snd(subst(pair))
         case _ => tree
     }
 
