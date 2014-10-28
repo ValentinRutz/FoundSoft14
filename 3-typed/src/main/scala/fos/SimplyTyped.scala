@@ -242,8 +242,15 @@ object SimplyTyped extends StandardTokenParsers {
     // TODO : Don't forget previous TODO
 
     /** Call by value reducer. */
+    // Note: many points are simplified from untyped reducer, since bad input does not typechecks
     def reduce(t: Term): Term = t match {
-        case _ =>
+        // COMPUTATION
+        case If(True, t, _) => t
+        case If(False, _, f) => f
+        case IsZero(Zero) => True
+        case IsZero(Succ(_)) =>
+            False
+
             throw NoRuleApplies(t)
     }
 
@@ -259,7 +266,7 @@ object SimplyTyped extends StandardTokenParsers {
         // Simple terms
         // Booleans
         case True | False =>
-          TypeBool
+            TypeBool
         case IsZero(subterm) if typeof(ctx, subterm) == TypeNat =>
             TypeBool
         // Natural integers
@@ -273,7 +280,7 @@ object SimplyTyped extends StandardTokenParsers {
                 throw TypeError(t.pos, s"""\"Then\" and \"Else\" part of If"
                            expression do not share the same type""")
         case Abstraction(Variable(param), typParam, body) =>
-          TypeFun(typParam, typeof((param, typParam) :: ctx, body))
+            TypeFun(typParam, typeof((param, typParam) :: ctx, body))
         case v @ Variable(name) =>
             ctx.find(e: (String, Type) => e._1 == name).get._2
         case Let(_, typ, _) =>
