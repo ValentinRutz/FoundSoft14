@@ -7,6 +7,10 @@ import org.scalatest.{ Matchers, FunSuite }
   */
 class TestMain extends FunSuite with Matchers {
 
+    /**
+      *   Creates a test that will make sure that the main funciton will print a
+      *   certain output if fed with a certain input on stdin
+      */
     def inputOutput(name: String)(input: String)(output: String) =
         test(s"Input/output should hold for : $name") {
 

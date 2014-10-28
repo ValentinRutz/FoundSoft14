@@ -14,8 +14,8 @@ class SmokeTest extends FunSuite with Matchers {
     }
 
     /**
-      * Creates a test for a string to check that parsing the string and
-      * returing it to string format returns the same value
+      * Creates a test to check that parsing a string and
+      * returning its toString returns the same value
       */
     def parseAndToString(term: String) = test(s"parse($term).toString == $term") {
         parse(term).toString should equal(term)
