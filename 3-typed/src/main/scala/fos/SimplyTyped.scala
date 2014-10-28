@@ -69,9 +69,16 @@ object SimplyTyped extends StandardTokenParsers {
       * Type       ::= SimpleType [ "->" Type ]
       */
     def Type: Parser[Type] = positioned(
-        SimpleType ~ opt("->" ~> Type) ^^ {
+        TupleType ~ opt("->" ~> Type) ^^ {
             case from ~ Some(to) =>
                 TypeFun(from, to)
+            case typ ~ None => typ
+        }
+            | failure("illegal start of type"))
+
+    def TupleType: Parser[Type] = positioned(
+        SimpleType ~ opt("*" ~> TupleType) ^^ {
+            case fst ~ Some(snd) => TypePair(fst, snd)
             case typ ~ None => typ
         }
             | failure("illegal start of type"))
