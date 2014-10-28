@@ -247,44 +247,61 @@ object SimplyTyped extends StandardTokenParsers {
       *  @return    the computed type
       */
     def typeof(ctx: Context, t: Term): Type = t match {
-        // Simple terms
-        // Booleans
+        /* T-TRUE, T-FALSE */
         case True | False =>
             TypeBool
+        /* T- ISZERO */
         case IsZero(subterm) if typeof(ctx, subterm) == TypeNat =>
             TypeBool
-        // Natural integers
+        /* T-ZERO */
         case Zero =>
             TypeNat
+        /* T-SUCC */
         case Succ(subterm) if typeof(ctx, subterm) == TypeNat =>
             TypeNat
+        /* T-PRED */
         case Pred(subterm) if typeof(ctx, subterm) == TypeNat =>
             TypeNat
+        /* T-ISZERO, T-SUCC, T-PRED Errors */
+        case err @ (IsZero(_) | Succ(_) | Pred(_)) =>
+            throw TypeError(err.pos, s"$err should be a natural integer")
+        /* T-IF */
         case If(cond, thenn, elz) if typeof(ctx, cond) == TypeBool &&
             typeof(ctx, thenn) == typeof(ctx, elz) =>
             typeof(ctx, thenn)
+        /* T-IF Errors */
+        case err @ If(cond, thenn, elz) if typeof(ctx, cond) != TypeBool =>
+            val typeCond = typeof(ctx, cond)
+            throw TypeError(err.pos, s"""$cond should be a boolean.
+                 Found: $typeCond""")
+        case err @ If(cond, thenn, elz) if typeof(ctx, thenn) != typeof(ctx, elz) =>
+            val typeThen = typeof(ctx, thenn)
+            val typeElse = typeof(ctx, elz)
+            throw TypeError(err.pos, s"""$thenn and $elz should have the same type.
+                 Found: then:$typeThen != else:$typeElse""")
+        /* T-VAR */
         case Variable(name) if ctx.exists(_._1 == name) =>
             (ctx find (_._1 == name)).get._2
+        case v @ Variable(name) =>
+            throw TypeError(v.pos, s"Variable $name is not in the context")
+        /* T-ABS */
         case Abstraction(Variable(param), typ, body) =>
             TypeFun(typ, typeof((param, typ) :: ctx, body))
+        /* T-APP */
         case Application(t1, t2) =>
             typeof(ctx, t1) match {
-                case TypeFun(from, to) if to == typeof(ctx, t2) =>
+                case TypeFun(from, to) if from == typeof(ctx, t2) =>
                     to
                 case _ =>
                     throw TypeError(t1.pos, s"""Left term should be
                   an abstraction""")
             }
-        /*
-        case Let(_, typ, _) =>
-            typ
         case Pair(fst, snd) =>
             TypePair(typeof(ctx, fst), typeof(ctx, snd))
         case Fst(Pair(fst, snd)) =>
             typeof(ctx, fst)
         case Snd(Pair(fst, snd)) =>
             typeof(ctx, snd)
-            */
         case _ =>
             throw TypeError(t.pos, s"Illegally typed expression: $t")
 
