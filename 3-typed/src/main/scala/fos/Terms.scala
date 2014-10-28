@@ -95,7 +95,13 @@ case class TypeFun(from: Type, to: Type) extends Type {
 }
 
 case class TypePair(fst: Type, snd: Type) extends Type {
-    override def toString = s"$fst*$snd"
+    override def toString = (fst, snd) match {
+        case (TypeFun(_, _) | TypePair(_, _), TypeFun(_, _) | TypePair(_, _)) =>
+            s"($fst)*($snd)"
+        case (_, TypeFun(_, _) | TypePair(_, _)) => s"$fst*($snd)"
+        case (TypeFun(_, _) | TypePair(_, _), _) => s"($fst)*$snd"
+        case _ => s"$fst*$snd"
+    }
 }
 
 object Value {
