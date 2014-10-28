@@ -22,7 +22,7 @@ class SmokeTest extends FunSuite with Matchers {
     }
 
     val simpleTerms = Seq("true", "false", "if true then true else true", "0",
-        "pred 0", "succ 0", "iszero 0", "x", """\x: Nat.x""", "t t")
+        "pred 0", "succ 0", "iszero 0", "x", """\x:Nat.x""", "t t")
 
     simpleTerms.foreach { term =>
         parseAndToString(term)
