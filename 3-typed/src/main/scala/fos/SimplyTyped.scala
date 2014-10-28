@@ -110,7 +110,6 @@ object SimplyTyped extends StandardTokenParsers {
       * @param s the term to substitute variable with
       * @return a new corresponding tree with substitution applied
       */
-    // TODO: Add cases for Let, Pair, Fst, Snd
     def subst(tree: Term)(implicit x: String, s: Term): Term = tree match {
         case Variable(name) if (name == x) => s
         case Application(fun, arg) => Application(subst(fun), subst(arg))
