@@ -258,6 +258,7 @@ object SimplyTyped extends StandardTokenParsers {
         // Natural integers
         case Zero | Succ(_) | Pred(_) =>
             TypeNat
+        /*
         case If(c, t, e) if typeof(ctx, c) == TypeBool =>
             if (typeof(ctx, t) == typeof(ctx, e))
                 typeof(ctx, e)
@@ -279,6 +280,7 @@ object SimplyTyped extends StandardTokenParsers {
             typeof(ctx, snd)
         case _ =>
             TypeError(t.pos, s"Illegally typed expression: $t")
+ */
     }
 
     /**
