@@ -25,3 +25,6 @@ project/plugins/project/
 
 */.idea/*
 *.iml
+
+# Vim swap files
+*.swp
