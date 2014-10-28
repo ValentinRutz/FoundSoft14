@@ -110,6 +110,7 @@ case class TypePair(fst: Type, snd: Type) extends Type {
 object Value {
     def unapply(t: Term): Option[Term] = t match {
         case True | False | Abstraction(_, _, _) => Some(t)
+        case Pair(Value(_), Value(_)) => Some(t)
         case NumericValue(x) => Some(t)
         case _ => None
     }
