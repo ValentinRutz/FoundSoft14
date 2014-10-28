@@ -1,6 +1,7 @@
 package fos
 
 import scala.util.parsing.input.Positional
+import scala.annotation.tailrec
 
 /** Abstract Syntax Trees for terms. */
 abstract class Term extends Positional
@@ -115,9 +116,12 @@ object Value {
 }
 
 object NumericValue {
-    def unapply(t: Term): Option[Term] = t match {
-        case Zero => Some(t)
-        case Succ(NumericValue(_)) => Some(t)
-        case _ => None
+
+    @tailrec private def isNumericValue(t: Term): Boolean = t match {
+        case Zero => true
+        case Succ(x) => isNumericValue(x)
+        case _ => false
     }
+
+    def unapply(t: Term): Option[Term] = if (isNumericValue(t)) Some(t) else None
 }
