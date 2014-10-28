@@ -49,7 +49,7 @@ case class Variable(name: String) extends Term {
 
 case class Abstraction(param: Variable, typ: Type, body: Term) extends Term {
     override def toString =
-        s"""\$param: $typ.body"""
+        s"""\\$param: $typ.body"""
 }
 
 case class Application(fun: Term, arg: Term) extends Term {
