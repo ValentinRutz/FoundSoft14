@@ -64,11 +64,6 @@ case class Application(fun: Term, arg: Term) extends Term {
     override def toString = "$parFun $parArg"
 }
 
-// TODO complete to implement 'let' and 'pair'
-case class Let(ident: Variable, typ: Type, expr: Term) extends Term {
-    override def toString = s"""let $ident: $typ = $expr"""
-}
-
 case class Pair(fst: Term, snd: Term) extends Term {
     override def toString = s"""{ $fst, $snd }"""
 }
