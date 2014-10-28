@@ -54,8 +54,9 @@ object SimplyTyped extends StandardTokenParsers {
             }
             | "(" ~> Term <~ ")"
             //   ... To complete ... with let and pair
-            | ("let" ~> ident) ~ (":" ~> Type) ~ ("=" ~> Term) ^^ {
-                case param ~ typ ~ expr => Let(Variable(param), typ, expr)
+            | ("let" ~> ident) ~ (":" ~> Type) ~ ("=" ~> Term) ~ ("in" ~> Term) ^^ {
+                case param ~ typ ~ expr ~ term =>
+                    Application(Abstraction(Variable(param), typ, expr), term)
             }
             | ("{" ~> Term <~ ",") ~ (Term <~ "}") ^^ {
                 case fst ~ snd => Pair(fst, snd)
@@ -241,8 +242,18 @@ object SimplyTyped extends StandardTokenParsers {
     // TODO : Don't forget previous TODO
 
     /** Call by value reducer. */
+    // Note: many points are simplified from untyped reducer, since bad input does not typechecks
     def reduce(t: Term): Term = t match {
-        case _ =>
+        // COMPUTATION
+        case If(True, t, _) => t
+        case If(False, _, f) => f
+        case IsZero(Zero) => True
+        case IsZero(Succ(_)) =>
+            False
+        case Pred(Zero) => Zero
+        case Pred(Succ(v)) => v
+        case Application(Abstraction(param, typ, body), value) =>
+            subst(body)(param.name, value)
             throw NoRuleApplies(t)
     }
 
