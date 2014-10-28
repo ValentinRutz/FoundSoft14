@@ -18,7 +18,9 @@ object SimplyTyped extends StandardTokenParsers {
       */
     def Term: Parser[Term] = positioned(
         // TODO: Add a complex term class?? Block class??
-        SimpleTerm <~ ("{" ~> SimpleTerm <~ "}")
+        rep1(SimpleTerm) ^^ {
+            _ reduceLeft (Application(_, _))
+        }
             | failure("illegal start of term"))
 
     /**
