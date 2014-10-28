@@ -17,7 +17,6 @@ object SimplyTyped extends StandardTokenParsers {
       * Term     ::= SimpleTerm { SimpleTerm }
       */
     def Term: Parser[Term] = positioned(
-        // TODO: Add a complex term class?? Block class??
         rep1(SimpleTerm) ^^ {
             _ reduceLeft (Application(_, _))
         }
@@ -254,18 +253,25 @@ object SimplyTyped extends StandardTokenParsers {
       *  @param t   the given term
       *  @return    the computed type
       */
-    // TODO: Check why TypeError can' be used as a return expression or if it is necessary to return it
     def typeof(ctx: Context, t: Term): Type = t match {
         // Simple terms
         // Booleans
         case True | False =>
-          TypeBool
+            TypeBool
         case IsZero(subterm) if typeof(ctx, subterm) == TypeNat =>
             TypeBool
         // Natural integers
-        case Zero | Succ(_) | Pred(_) =>
+        case Zero => TypeNat
+        case Succ(subterm) if typeof(ctx, subterm) == TypeNat =>
             TypeNat
-
+        case Pred(subterm) if typeof(ctx, subterm) == TypeNat =>
+            TypeNat
+        case If(cond, thenn, elz) if typeof(ctx, cond) == TypeBool &&
+            typeof(ctx, thenn) == typeof(ctx, elz) =>
+            typeof(ctx, thenn)
+        case Variable(name) if ctx.exists(_._1 == name) =>
+            (ctx find (_._1 == name)).get._2
+        /*
         case If(c, t, e) if typeof(ctx, c) == TypeBool =>
             if (typeof(ctx, t) == typeof(ctx, e))
                 typeof(ctx, e)
@@ -273,9 +279,10 @@ object SimplyTyped extends StandardTokenParsers {
                 throw TypeError(t.pos, s"""\"Then\" and \"Else\" part of If"
                            expression do not share the same type""")
         case Abstraction(Variable(param), typParam, body) =>
-          TypeFun(typParam, typeof((param, typParam) :: ctx, body))
+            TypeFun(typParam, typeof((param, typParam) :: ctx, body))
         case v @ Variable(name) =>
-            ctx.find(e: (String, Type) => e._1 == name).get._2
+            ctx.find(e: (String, Type) => e._1 == name).getOrElse(
+                throw TypeError(v.pos, ""))._2
         case Let(_, typ, _) =>
             typ
         case Pair(fst, snd) =>
@@ -284,6 +291,7 @@ object SimplyTyped extends StandardTokenParsers {
             typeof(ctx, fst)
         case Snd(Pair(fst, snd)) =>
             typeof(ctx, snd)
+            */
         case _ =>
             throw TypeError(t.pos, s"Illegally typed expression: $t")
 
