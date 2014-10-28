@@ -37,14 +37,12 @@ class TestTermParser extends FunSuite with Matchers with LambdaTest {
         "x y z" shouldParseTo Application(Application(x, y), z)
     }
 
-    /*
-    test("Test parsing \"\\x. x x x\" (abstraction max right extension)") {
-        "\\x. x x x" shouldParseTo Abstraction(x, Application(Application(x, x), x))
+    test("Test parsing \"\\x: Nat. x x x\" (abstraction max right extension)") {
+        "\\x: Nat. x x x" shouldParseTo Abstraction(x, Nat, Application(Application(x, x), x))
 
     }
 
     test("Assignment example") {
-        "\\x.\\y. x y x" shouldParseTo "\\x. (\\y. ((x y) x))"
+        "\\x: Nat.\\y: Nat. x y x" shouldParseTo "\\x: Nat. (\\y: Nat. ((x y) x))"
     }
- */
 }
