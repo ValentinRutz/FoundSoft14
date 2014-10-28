@@ -94,96 +94,6 @@ object SimplyTyped extends StandardTokenParsers {
     /** The context is a list of variable names paired with their type. */
     type Context = List[(String, Type)]
 
-    object freshName {
-        val Versioned = """([^\$]+)\$(\d+)""".r
-        var counter = 0
-        def apply(name: String): String = {
-            val realName = name match {
-                case Versioned(n, v) => n
-                case _ => name
-            }
-            counter = counter + 1
-            realName + "$" + counter
-        }
-
-        def apply(variable: Variable): Variable = {
-            val Variable(name) = variable
-            Variable(freshName(name))
-        }
-    }
-
-    /**
-      * Free variables extraction
-      *
-      * @param t the term to compute
-      * @return the set of free variables in t
-      */
-    // TODO: Add cases for Let, Pair, Fst, Snd
-    def freeVars(t: Term): Set[Variable] = t match {
-        case x: Variable => Set(x)
-        case Abstraction(x, typ, t1) => freeVars(t1) - x
-        case Application(t1, t2) => freeVars(t1) ++ freeVars(t2)
-        case Succ(t) => freeVars(t)
-        case Pred(t) => freeVars(t)
-        case IsZero(t) => freeVars(t)
-        case If(c, t, e) => freeVars(c) ++ freeVars(t) ++ freeVars(e)
-        case Pair(fst, snd) => freeVars(fst) ++ freeVars(snd)
-        case Fst(p) => freeVars(p)
-        case Snd(p) => freeVars(p)
-    }
-
-    /**
-      * Alpha-conversion
-      * Only renames abstraction since they are the only
-      * way to bound variable names
-      *
-      */
-    def alpha(tree: Abstraction): Abstraction = {
-        val Abstraction(variable, typ, body) = tree
-        val freshVar = freshName(variable)
-
-        /**
-          * Concretely makes substitution of alpha-conversion in given term.
-          * This function may rename even variables shadowing the one that
-          * has to be replaced, which does not change the behavior of the program
-          * but makes useless conversion.
-          * Note that this function avoids calling subst and prevents hidden infinite
-          * recursion.
-          *
-          * @param tree The term to be renamed
-          * @param oldVar The variable that will be substituted
-          * @param freshVar The new variable for substitution
-          * @return term with substitution applied
-          */
-        // TODO: Add cases for Let, Pair, Fst, Snd
-        def renameTree(tree: Term)(implicit oldFresh: (Variable, Variable)): Term = {
-            val (oldVar, freshVar) = oldFresh
-            tree match {
-                case v: Variable if (v == oldVar) =>
-                    freshVar
-                case v: Variable => v
-                case Abstraction(param, typ, body) if (param == oldVar) =>
-                    Abstraction(freshVar, typ, renameTree(body))
-                case Abstraction(param, typ, body) =>
-                    Abstraction(param, typ, renameTree(body))
-                case Application(fun, arg) =>
-                    Application(renameTree(fun), renameTree(arg))
-                case Succ(term) =>
-                    Succ(renameTree(term))
-                case Pred(term) =>
-                    Pred(renameTree(term))
-                case IsZero(term) =>
-                    IsZero(renameTree(term))
-                case If(c, t, e) =>
-                    If(renameTree(c), renameTree(t), renameTree(e))
-                case Pair(fst, snd) => Pair(renameTree(fst), renameTree(snd))
-                case Fst(p) => Fst(renameTree(p))
-                case Snd(p) => Snd(renameTree(p))
-            }
-        }
-        Abstraction(freshVar, typ, renameTree(body)((variable, freshVar)))
-    }
-
     /**
       * Substitution method
       * substitute and rename variables if necessary to avoid free variable capture
@@ -198,12 +108,8 @@ object SimplyTyped extends StandardTokenParsers {
         case Variable(name) if (name == x) => s
         case Application(fun, arg) => Application(subst(fun), subst(arg))
         case a @ Abstraction(param, _, _) if (param.name == x) => a
-        case Abstraction(param, typ, body) if (!freeVars(s).contains(param)) => {
+        case Abstraction(param, typ, body) => {
             Abstraction(param, typ, subst(body))
-        }
-        case a @ Abstraction(_, _, _) => {
-            // param.name != x, freeVars(s) contain param
-            subst(alpha(a))
         }
         case Succ(term) => Succ(subst(term))
         case Pred(term) => Pred(subst(term))
