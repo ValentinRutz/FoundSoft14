@@ -102,3 +102,20 @@ case class TypeFun(from: Type, to: Type) extends Type {
 case class TypePair(fst: Type, snd: Type) extends Type {
     override def toString() = s"$fst*$snd"
 }
+
+object Value {
+    def unapply(t: Term): Option[Term] = t match {
+        case True | False | Abstraction(_, _, _) => Some(t)
+        case NumericValue(x) => Some(t)
+        case _ => None
+    }
+}
+
+object NumericValue {
+    def unapply(t: Term): Option[Term] = t match {
+        case Zero => Some(t)
+        case Succ(NumericValue(_)) => Some(t)
+        case _ => None
+    }
+}
+
