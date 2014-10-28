@@ -251,7 +251,9 @@ object SimplyTyped extends StandardTokenParsers {
     def typeof(ctx: Context, t: Term): Type = t match {
         // Simple terms
         // Booleans
-        case True | False | IsZero(_) =>
+        case True | False =>
+          TypeBool
+        case IsZero(subterm) if typeof(subterm) == TypeNat =>
             TypeBool
         // Natural integers
         case Zero | Succ(_) | Pred(_) =>
@@ -263,10 +265,9 @@ object SimplyTyped extends StandardTokenParsers {
                 TypeError(t.pos, s"""\"Then\" and \"Else\" part of If expression"
               do not share the same type""")
         case Abstraction(Variable(param), typParam, body) =>
-            typeof((param, typParam) :: ctx, body)
+          TypeFun(typParam, typeof((param, typParam) :: ctx, body))
         case v @ Variable(name) =>
-            ctx.find(e => e._1 == name).getOrElse(TypeError(v.pos,
-                s"Variable $name does not exist in context $ctx"))._2
+            ctx.find(e => e._1 == name).get._2
         case Let(_, typ, _) =>
             typ
         case Pair(fst, snd) =>

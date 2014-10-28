@@ -100,5 +100,5 @@ case class TypeFun(from: Type, to: Type) extends Type {
 }
 
 case class TypePair(fst: Type, snd: Type) extends Type {
-    override def toString() = s"$fst x $snd"
+    override def toString() = s"$fst*$snd"
 }
