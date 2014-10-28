@@ -182,8 +182,7 @@ object SimplyTyped extends StandardTokenParsers {
         /* T-ISZERO, T-SUCC, T-PRED Errors */
         case err @ (IsZero(_) | Succ(_) | Pred(_)) =>
             val typeErr = typeof(ctx, err)
-            throw TypeError(err.pos, s"""parameter type mismatch:
-                 expected: Nat, found, $typeErr""")
+            throw TypeError(err.pos, s"parameter type mismatch: expected: Nat, found, $typeErr")
         /* T-IF */
         case If(cond, thenn, elz) if typeof(ctx, cond) == TypeBool &&
             typeof(ctx, thenn) == typeof(ctx, elz) =>
@@ -213,8 +212,7 @@ object SimplyTyped extends StandardTokenParsers {
                 case TypeFun(from, to) if from == typeT2 =>
                     to
                 case err @ TypeFun(from, _) =>
-                    throw TypeError(err.pos, s"""parameter type mismatch:
-                         expected $from, found $typeT2""")
+                    throw TypeError(err.pos, s"parameter type mismatch: expected $from, found $typeT2")
                 case _ =>
                     throw TypeError(t1.pos, s"""left term should be
                   an abstraction""")
@@ -225,12 +223,12 @@ object SimplyTyped extends StandardTokenParsers {
             typeof(ctx, fst)
         case Fst(err) =>
             val typeErr = typeof(ctx, err)
-            throw TypeError(err.pos, s"pair type expected but found $typeErr")
+            throw TypeError(err.pos, s"pair type expected but $typeErr found")
         case Snd(Pair(fst, snd)) =>
             typeof(ctx, snd)
         case Snd(err) =>
             val typeErr = typeof(ctx, err)
-            throw TypeError(err.pos, s"pair type expected but found $typeErr")
+            throw TypeError(err.pos, s"pair type expected but $typeErr found")
         case _ =>
             throw TypeError(t.pos, s"illegally typed expression: $t")
 
@@ -261,7 +259,9 @@ object SimplyTyped extends StandardTokenParsers {
                     for (t <- path(trees, reduce))
                         println(t)
                 } catch {
-                    case tperror: TypeError => println(tperror.toString)
+                    case tperror: TypeError =>
+                        println(tperror.msg)
+                        println(tokens.source)
                 }
             case e =>
                 println(e)

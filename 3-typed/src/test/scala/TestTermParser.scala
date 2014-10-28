@@ -81,5 +81,4 @@ class TestTermParser extends FunSuite with Matchers with LambdaTest {
     test("Parse Snd") {
         "snd 0" shouldParseTo Snd(Zero)
     }
-
 }

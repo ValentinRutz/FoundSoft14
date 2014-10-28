@@ -48,8 +48,10 @@ case class Variable(name: String) extends Term {
 }
 
 case class Abstraction(param: Variable, typ: Type, body: Term) extends Term {
-    override def toString =
-        s"\\$param: $typ.$body"
+    override def toString = body match {
+        case _: Application | _: IsZero | _: Variable => s"\\$param:$typ.$body"
+        case _ => s"\\$param:$typ.($body)"
+    }
 }
 
 case class Application(fun: Term, arg: Term) extends Term {
@@ -58,7 +60,7 @@ case class Application(fun: Term, arg: Term) extends Term {
         case _ => s"$fun"
     }
     private val parArg: String = arg match {
-        case _: Application => s"($arg)"
+        case _: Application | _: Abstraction => s"($arg)"
         case _ => s"$arg"
     }
     override def toString = s"$parFun $parArg"
