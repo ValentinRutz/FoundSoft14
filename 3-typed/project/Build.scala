@@ -5,6 +5,7 @@ import java.io.File
 import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import scalariform.formatter.preferences._
+import scoverage.ScoverageSbtPlugin._
 
 object ExerciseBuild extends Build {
 
@@ -38,7 +39,10 @@ object ExerciseBuild extends Build {
   }
 
   lazy val root = Project("fos-project2", file("."))
-  .settings((exerciseSettings ++ Seq(packageToMoodleTask) ++ scalariformConfig):_*)
+  .settings( (exerciseSettings 
+                ++ Seq(packageToMoodleTask) 
+                ++ scalariformConfig
+                ++ scoverageSettings) : _*)
 
   private def gatherSources(out: File, po: Seq[PackageOption], cacheDir: File, log: Logger): File = {
     val packagePrefix = "src/fos"
@@ -88,4 +92,7 @@ object ExerciseBuild extends Build {
         .setPreference(SpacesWithinPatternBinders, true)
   )
 
+    def scoverageSettings = instrumentSettings ++ Seq(
+        ScoverageKeys.highlighting := true
+    )
 }
