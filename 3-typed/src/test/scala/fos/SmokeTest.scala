@@ -15,7 +15,7 @@ class SmokeTest extends FunSuite with Matchers {
 
     val simpleTerms = Seq("true", "false", "if true then true else true", "0",
         "pred 0", "succ 0", "iszero 0", "x", """\x:Nat.x""", "t t", "{0, 0}",
-        "fst {0, 0}", "snd {0, 0}")
+        "fst {0, 0}", "snd {0, 0}", "{{0, true}, 0}")
 
     simpleTerms.foreach { term =>
         test(s"parse($term).toString == $term") {
@@ -23,7 +23,9 @@ class SmokeTest extends FunSuite with Matchers {
         }
     }
 
-    val simpleTypes = Seq("Nat", "Bool", "Nat*Nat", "Nat->Bool")
+    val simpleTypes = Seq("Nat", "Bool", "Nat*Nat", "Nat->Bool",
+        "(Nat->Nat)->Bool", "(Nat*Nat)*Nat", "Nat*(Bool->Nat)",
+        "(Bool->Nat)*Bool", "(Bool->Bool)*(Nat->Nat)")
 
     simpleTypes.foreach { typ =>
         test(s"parse($typ).toString == $typ") {

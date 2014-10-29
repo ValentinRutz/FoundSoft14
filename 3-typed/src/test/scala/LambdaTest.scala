@@ -45,10 +45,11 @@ trait LambdaTest {
         }
 
         def test(expectedTree: Term)(reduceFun: Term => Term): Unit = {
+            val term = parseTerm(input)
             val result = try {
-                reduceFun(parseTerm(input))
+                reduceFun(term)
             } catch {
-                case NoRuleApplies(term) => term
+                case NoRuleApplies(_) => term
             }
             result should be(expectedTree)
         }

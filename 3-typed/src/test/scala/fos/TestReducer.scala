@@ -96,4 +96,13 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
     test("snd { pred 0, pred 0 }") {
         "snd { pred 0,  pred 0 }" shouldReduceTo "snd {0, pred 0}"
     }
+
+    val values = Seq("true", "false", "succ succ 0", """\x:Bool.x""",
+        "{0,true}", "{{0, true}, succ 1}")
+
+    values.foreach { term =>
+        test(s"Value $term should not reduce further") {
+            term shouldReduceTo term
+        }
+    }
 }
