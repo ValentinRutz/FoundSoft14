@@ -289,8 +289,7 @@ object SimplyTyped extends StandardTokenParsers {
                         println(t)
                 } catch {
                     case tperror: TypeError =>
-                        println(tperror.msg)
-                        println(tokens.source)
+                        println(tperror)
                 }
             case e =>
                 println(e)

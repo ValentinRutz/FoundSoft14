@@ -40,6 +40,7 @@ class TestMain extends FunSuite with Matchers {
     } {
         """parameter type mismatch: expected Nat, found Bool
           |(\x:Nat.x) true
+          |           ^
           |""".stripMargin
     }
 
@@ -48,6 +49,7 @@ class TestMain extends FunSuite with Matchers {
     } {
         """pair type expected but Nat found
           |(\x:Nat.snd x) 1
+          |            ^
           |""".stripMargin
     }
 
