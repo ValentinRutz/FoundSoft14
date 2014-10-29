@@ -56,7 +56,7 @@ object SimplyTyped extends StandardTokenParsers {
             //   ... To complete ... with let and pair
             | ("let" ~> ident) ~ (":" ~> Type) ~ ("=" ~> Term) ~ ("in" ~> Term) ^^ {
                 case param ~ typ ~ expr ~ term =>
-                    Application(Abstraction(Variable(param), typ, expr), term)
+                    Application(Abstraction(Variable(param), typ, term), expr)
             }
             | ("{" ~> Term <~ ",") ~ (Term <~ "}") ^^ {
                 case fst ~ snd => Pair(fst, snd)

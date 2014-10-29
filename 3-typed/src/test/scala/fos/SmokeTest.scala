@@ -30,4 +30,8 @@ class SmokeTest extends FunSuite with Matchers {
             parse(Type)(typ).toString should equal(typ)
         }
     }
+
+    test("Let should translate correctly") {
+        parse(Term)("let x : Nat = 0 in x").toString should equal("""(\x:Nat.x) 0""")
+    }
 }
