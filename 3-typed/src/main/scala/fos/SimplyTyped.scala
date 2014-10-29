@@ -41,11 +41,15 @@ object SimplyTyped extends StandardTokenParsers {
     def SimpleTerm: Parser[Term] = positioned(
         "true" ^^^ True
             | "false" ^^^ False
-            | numericLit ^^ { case e => Iterator.iterate[Term](Zero)(Succ).toStream(e.toInt) }
+            | numericLit ^^ {
+                case e => (1 to e.toInt).foldLeft[Term](Zero)((b, a) => Succ(b))
+            }
             | "succ" ~> Term ^^ Succ
             | "pred" ~> Term ^^ Pred
             | "iszero" ~> Term ^^ IsZero
-            | ("if" ~> Term) ~ ("then" ~> Term) ~ ("else" ~> Term) ^^ { case c ~ t ~ e => If(c, t, e) }
+            | ("if" ~> Term) ~ ("then" ~> Term) ~ ("else" ~> Term) ^^ {
+                case cond ~ thn ~ els => If(cond, thn, els)
+            }
             | ident ^^ {
                 case ident => Variable(ident)
             }
@@ -53,7 +57,6 @@ object SimplyTyped extends StandardTokenParsers {
                 case param ~ typ ~ body => Abstraction(Variable(param), typ, body)
             }
             | "(" ~> Term <~ ")"
-            //   ... To complete ... with let and pair
             | ("let" ~> ident) ~ (":" ~> Type) ~ ("=" ~> Term) ~ ("in" ~> Term) ^^ {
                 case param ~ typ ~ expr ~ term =>
                     Application(Abstraction(Variable(param), typ, term), expr)
@@ -66,7 +69,7 @@ object SimplyTyped extends StandardTokenParsers {
             | failure("illegal start of simple term"))
 
     /**
-      * Type       ::= SimpleType [ "->" Type ]
+      * Type       ::= TupleType [ "->" Type ]
       */
     def Type: Parser[Type] = positioned(
         TupleType ~ opt("->" ~> Type) ^^ {
@@ -76,6 +79,9 @@ object SimplyTyped extends StandardTokenParsers {
         }
             | failure("illegal start of type"))
 
+    /**
+      * TupleType       ::= SimpleType [ "*" TupleType ]
+      */
     def TupleType: Parser[Type] = positioned(
         SimpleType ~ opt("*" ~> TupleType) ^^ {
             case fst ~ Some(snd) => TypePair(fst, snd)

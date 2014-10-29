@@ -4,7 +4,7 @@ import scala.util.parsing.input.Positional
 import scala.annotation.tailrec
 
 /** Abstract Syntax Trees for terms. */
-abstract class Term extends Positional
+sealed abstract class Term extends Positional
 
 case object True extends Term {
     override def toString = "true"
@@ -39,9 +39,9 @@ case class IsZero(term: Term) extends Term {
     }
 }
 
-case class If(c: Term, t: Term, e: Term) extends Term {
+case class If(cond: Term, thn: Term, els: Term) extends Term {
     override def toString =
-        s"if $c then $t else $e"
+        s"if $cond then $thn else $els"
 }
 
 case class Variable(name: String) extends Term {
