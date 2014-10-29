@@ -167,6 +167,22 @@ object SimplyTyped extends StandardTokenParsers {
     }
 
     /**
+      * Small helper function that checks that <code>t</code> is well typed with
+      * type <code>expected</code> and returns <code>finalType</code> if it is
+      * the case
+      *
+      * @param error The function that will generate the error message from the
+      * position of the term, the expected type and the type that was found
+      *
+      */
+    def expect(ctx: Context, t: Term,
+               expected: Type, finalType: Type,
+               error: (Position, Type, Type) => TypeError) = {
+        val found = typeof(ctx, t)
+        if (found == expected) finalType else throw error(t.pos, expected, found)
+    }
+
+    /**
       * Returns the type of the given term <code>t</code>.
       *
       *  @param ctx the initial context
@@ -183,21 +199,22 @@ object SimplyTyped extends StandardTokenParsers {
             TypeNat
 
         /* T-PRED */
-        case Pred(subterm) if typeof(ctx, subterm) == TypeNat =>
-            TypeNat
+        case Pred(subterm) =>
+            expect(ctx, subterm,
+                TypeNat, TypeNat,
+                new ErrorParamType(_, _, _))
 
         /* T-SUCC */
-        case Succ(subterm) if typeof(ctx, subterm) == TypeNat =>
-            TypeNat
+        case Succ(subterm) =>
+            expect(ctx, subterm,
+                TypeNat, TypeNat,
+                new ErrorParamType(_, _, _))
 
         /* T- ISZERO */
-        case IsZero(subterm) if typeof(ctx, subterm) == TypeNat =>
-            TypeBool
-
-        /* T-ISZERO, T-SUCC, T-PRED Errors */
-        case err @ (IsZero(_) | Succ(_) | Pred(_)) =>
-            val typeErr = typeof(ctx, err)
-            throw TypeError(err.pos, s"parameter type mismatch: expected: Nat, found, $typeErr")
+        case IsZero(subterm) =>
+            expect(ctx, subterm,
+                TypeNat, TypeBool,
+                new ErrorParamType(_, _, _))
 
         /* T-IF */
         case If(cond, thenn, elz) if typeof(ctx, cond) == TypeBool &&
