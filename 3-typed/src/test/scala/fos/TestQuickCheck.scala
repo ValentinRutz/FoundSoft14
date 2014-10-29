@@ -9,9 +9,9 @@ import org.scalatest.{ Matchers, FunSuite }
 // TODO: Add Abstraction, Application, Pairs, Fst, Snd to the definitions
 class TestQuickCheck extends Properties("Term") {
 
-    def intLeafs: Gen[Term] = Zero
+    def intLeafs: Gen[Term] = Zero()
 
-    def boolLeafs: Gen[Term] = Gen.oneOf(True, False)
+    def boolLeafs: Gen[Term] = Gen.oneOf(True(), False())
 
     def succPredNodes(max: Int): Gen[Term] = for {
         t1 <- intTerms(max - 1)

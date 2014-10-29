@@ -12,8 +12,8 @@ trait LambdaTest {
     val y = Variable("y")
     val z = Variable("z")
 
-    val Nat = TypeNat
-    val Bool = TypeBool
+    val Nat = TypeNat()
+    val Bool = TypeBool()
 
     def parse[T](parser: Parser[T])(in: String): T = {
         val tokens = new lexical.Scanner(in)

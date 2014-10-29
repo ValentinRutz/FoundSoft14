@@ -39,10 +39,10 @@ object SimplyTyped extends StandardTokenParsers {
       *               | "snd" Term
       */
     def SimpleTerm: Parser[Term] = positioned(
-        "true" ^^^ True
-            | "false" ^^^ False
+        "true" ^^^ True()
+            | "false" ^^^ False()
             | numericLit ^^ {
-                case e => (1 to e.toInt).foldLeft[Term](Zero)((b, a) => Succ(b))
+                case e => (1 to e.toInt).foldLeft[Term](Zero())((b, a) => Succ(b))
             }
             | "succ" ~> Term ^^ Succ
             | "pred" ~> Term ^^ Pred
@@ -90,8 +90,8 @@ object SimplyTyped extends StandardTokenParsers {
             | failure("illegal start of type"))
 
     def SimpleType: Parser[Type] = positioned(
-        "Bool" ^^^ TypeBool
-            | "Nat" ^^^ TypeNat
+        "Bool" ^^^ TypeBool()
+            | "Nat" ^^^ TypeNat()
             | "(" ~> Type <~ ")"
             | failure("illegal start of type"))
 
@@ -141,11 +141,11 @@ object SimplyTyped extends StandardTokenParsers {
     // Note: many points are simplified from untyped reducer, since bad input does not typecheck
     def reduce(t: Term): Term = t match {
         // COMPUTATION
-        case If(True, t, _) => t
-        case If(False, _, f) => f
-        case IsZero(Zero) => True
-        case IsZero(Succ(NumericValue(_))) => False
-        case Pred(Zero) => Zero
+        case If(True(), t, _) => t
+        case If(False(), _, f) => f
+        case IsZero(Zero()) => True()
+        case IsZero(Succ(NumericValue(_))) => False()
+        case Pred(Zero()) => Zero()
         case Pred(Succ(NumericValue(v))) => v
         case Application(Abstraction(param, typ, body), Value(value)) =>
             subst(body)(param.name, value)
@@ -190,28 +190,28 @@ object SimplyTyped extends StandardTokenParsers {
       */
     def typeof(t: Term)(implicit ctx: Context = Nil): Type = t match {
         /* T-TRUE, T-FALSE */
-        case True | False =>
-            TypeBool
+        case True() | False() =>
+            TypeBool()
 
         /* T-ZERO */
-        case Zero =>
-            TypeNat
+        case Zero() =>
+            TypeNat()
 
         /* T-PRED */
         case Pred(subterm) =>
-            expect(subterm, TypeNat, TypeNat, new ErrorParamType(_, _, _))
+            expect(subterm, TypeNat(), TypeNat(), new ErrorParamType(_, _, _))
 
         /* T-SUCC */
         case Succ(subterm) =>
-            expect(subterm, TypeNat, TypeNat, new ErrorParamType(_, _, _))
+            expect(subterm, TypeNat(), TypeNat(), new ErrorParamType(_, _, _))
 
         /* T- ISZERO */
         case IsZero(subterm) =>
-            expect(subterm, TypeNat, TypeBool, new ErrorParamType(_, _, _))
+            expect(subterm, TypeNat(), TypeBool(), new ErrorParamType(_, _, _))
 
         /* T-IF */
         case If(cond, thenn, els) =>
-            expect(cond, TypeBool, TypeBool,
+            expect(cond, TypeBool(), TypeBool(),
                 (pos, expected, found) =>
                     TypeError(pos, s"Condition should be a boolean. " +
                         "Found $found"))

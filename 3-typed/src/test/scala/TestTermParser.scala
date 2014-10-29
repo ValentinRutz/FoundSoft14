@@ -47,44 +47,44 @@ class TestTermParser extends FunSuite with Matchers with LambdaTest {
     }
 
     test("Parse 0") {
-        "0" shouldParseTo Zero
+        "0" shouldParseTo Zero()
     }
 
     test("Parse succ") {
-        "succ 0" shouldParseTo Succ(Zero)
+        "succ 0" shouldParseTo Succ(Zero())
     }
 
     test("Parse pred") {
-        "pred 0" shouldParseTo Pred(Zero)
+        "pred 0" shouldParseTo Pred(Zero())
     }
 
     test("Parse pred succ 1") {
-        "pred succ 1" shouldParseTo Pred(Succ(Succ(Zero)))
+        "pred succ 1" shouldParseTo Pred(Succ(Succ(Zero())))
     }
 
     test("Parse Int") {
-        "1" shouldParseTo Succ(Zero)
+        "1" shouldParseTo Succ(Zero())
         "2" shouldParseTo "succ 1"
         "3" shouldParseTo "succ 2"
     }
 
     test("Parse iszero") {
-        "iszero 0" shouldParseTo IsZero(Zero)
+        "iszero 0" shouldParseTo IsZero(Zero())
     }
 
     test("Parse If") {
-        "if true then true else false" shouldParseTo If(True, True, False)
+        "if true then true else false" shouldParseTo If(True(), True(), False())
     }
 
     test("Parse Pair") {
-        "{ false, 0 }" shouldParseTo Pair(False, Zero)
+        "{ false, 0 }" shouldParseTo Pair(False(), Zero())
     }
 
     test("Parse Fst") {
-        "fst 0" shouldParseTo Fst(Zero)
+        "fst 0" shouldParseTo Fst(Zero())
     }
 
     test("Parse Snd") {
-        "snd 0" shouldParseTo Snd(Zero)
+        "snd 0" shouldParseTo Snd(Zero())
     }
 }

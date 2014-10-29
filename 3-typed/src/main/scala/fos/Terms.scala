@@ -6,15 +6,15 @@ import scala.annotation.tailrec
 /** Abstract Syntax Trees for terms. */
 sealed abstract class Term extends Positional
 
-case object True extends Term {
+case class True() extends Term {
     override def toString = "true"
 }
 
-case object False extends Term {
+case class False() extends Term {
     override def toString = "false"
 }
 
-case object Zero extends Term {
+case class Zero() extends Term {
     override def toString = "0"
 }
 
@@ -82,11 +82,11 @@ case class Snd(pair: Term) extends Term {
 /** Abstract Syntax Trees for types. */
 abstract class Type extends Term
 
-case object TypeBool extends Type {
+case class TypeBool() extends Type {
     override def toString = "Bool"
 }
 
-case object TypeNat extends Type {
+case class TypeNat() extends Type {
     override def toString = "Nat"
 }
 
@@ -109,7 +109,7 @@ case class TypePair(fst: Type, snd: Type) extends Type {
 
 object Value {
     def unapply(t: Term): Option[Term] = t match {
-        case True | False | Abstraction(_, _, _) => Some(t)
+        case True() | False() | Abstraction(_, _, _) => Some(t)
         case Pair(Value(_), Value(_)) => Some(t)
         case NumericValue(x) => Some(t)
         case _ => None
@@ -119,7 +119,7 @@ object Value {
 object NumericValue {
 
     @tailrec private def isNumericValue(t: Term): Boolean = t match {
-        case Zero => true
+        case Zero() => true
         case Succ(x) => isNumericValue(x)
         case _ => false
     }
