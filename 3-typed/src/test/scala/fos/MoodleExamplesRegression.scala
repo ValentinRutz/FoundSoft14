@@ -14,7 +14,7 @@ class MoodleExamplesRegression extends FunSuite with Matchers {
     }
 
     test("Type checking when there is no type") {
-        an[TypeError] should be thrownBy typeof(Nil, parse("x y"))
+        an[TypeError] should be thrownBy typeof(parse("x y"))
     }
 
     test("order of rules in call-by-value") {

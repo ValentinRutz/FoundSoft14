@@ -106,7 +106,7 @@ object SimplyTyped extends StandardTokenParsers {
 
     class ErrorParamType(pos: Position, expected: Type, found: Type)
         extends TypeError(pos,
-            s"parameter type mismatch: expected: $expected, found, $found")
+            s"parameter type mismatch: expected $expected, found $found")
 
     /** The context is a list of variable names paired with their type. */
     type Context = List[(String, Type)]
@@ -175,10 +175,9 @@ object SimplyTyped extends StandardTokenParsers {
       * position of the term, the expected type and the type that was found
       *
       */
-    def expect(ctx: Context, t: Term,
-               expected: Type, finalType: Type,
-               error: (Position, Type, Type) => TypeError) = {
-        val found = typeof(ctx, t)
+    def expect(t: Term, expected: Type, finalType: Type,
+               error: (Position, Type, Type) => TypeError)(implicit ctx: Context) = {
+        val found = typeof(t)
         if (found == expected) finalType else throw error(t.pos, expected, found)
     }
 
@@ -189,7 +188,7 @@ object SimplyTyped extends StandardTokenParsers {
       *  @param t   the given term
       *  @return    the computed type
       */
-    def typeof(ctx: Context, t: Term): Type = t match {
+    def typeof(t: Term)(implicit ctx: Context = Nil): Type = t match {
         /* T-TRUE, T-FALSE */
         case True | False =>
             TypeBool
@@ -200,77 +199,65 @@ object SimplyTyped extends StandardTokenParsers {
 
         /* T-PRED */
         case Pred(subterm) =>
-            expect(ctx, subterm,
-                TypeNat, TypeNat,
-                new ErrorParamType(_, _, _))
+            expect(subterm, TypeNat, TypeNat, new ErrorParamType(_, _, _))
 
         /* T-SUCC */
         case Succ(subterm) =>
-            expect(ctx, subterm,
-                TypeNat, TypeNat,
-                new ErrorParamType(_, _, _))
+            expect(subterm, TypeNat, TypeNat, new ErrorParamType(_, _, _))
 
         /* T- ISZERO */
         case IsZero(subterm) =>
-            expect(ctx, subterm,
-                TypeNat, TypeBool,
-                new ErrorParamType(_, _, _))
+            expect(subterm, TypeNat, TypeBool, new ErrorParamType(_, _, _))
 
         /* T-IF */
-        case If(cond, thenn, elz) if typeof(ctx, cond) == TypeBool &&
-            typeof(ctx, thenn) == typeof(ctx, elz) =>
-            typeof(ctx, thenn)
+        case If(cond, thenn, els) =>
+            expect(cond, TypeBool, TypeBool,
+                (pos, expected, found) =>
+                    TypeError(pos, s"Condition should be a boolean. " +
+                        "Found $found"))
 
-        /* T-IF Errors */
-        case err @ If(cond, thenn, elz) if typeof(ctx, cond) != TypeBool =>
-            val typeCond = typeof(ctx, cond)
-            throw TypeError(err.pos, s"""$cond should be a boolean.
-                 Found: $typeCond""")
-        case err @ If(cond, thenn, elz) if typeof(ctx, thenn) != typeof(ctx, elz) =>
-            val typeThen = typeof(ctx, thenn)
-            val typeElse = typeof(ctx, elz)
-            throw TypeError(err.pos, s"""$thenn and $elz should have the same type.
-                 Found: then=$typeThen != else=$typeElse""")
+            val typeThen = typeof(thenn)
+            expect(els, typeThen, typeThen,
+                (pos, expected, found) =>
+                    TypeError(pos, s"then and else part should have the same type. " +
+                        "Found: then=$expected != else=$found"))
 
         /* T-VAR */
-        case Variable(name) if ctx.exists(_._1 == name) =>
-            (ctx find (_._1 == name)).get._2
-        case v @ Variable(name) =>
+        case v @ Variable(name) => (ctx find (_._1 == name)) map {
+            case (name, typ) => typ
+        } getOrElse {
             throw TypeError(v.pos, s"variable $name is not in the context")
+        }
 
         /* T-ABS */
         case Abstraction(Variable(param), typ, body) =>
-            TypeFun(typ, typeof((param, typ) :: ctx, body))
+            implicit val newContext = (param, typ) :: ctx
+            TypeFun(typ, typeof(body)(newContext))
 
         /* T-APP */
         case Application(t1, t2) =>
-            val typeT2 = typeof(ctx, t2)
-            typeof(ctx, t1) match {
-                case TypeFun(from, to) if from == typeT2 =>
-                    to
-                case err @ TypeFun(from, _) =>
-                    throw TypeError(err.pos, s"parameter type mismatch: expected $from, found $typeT2")
+            val TypeFun(from, to) = typeof(t1) match {
+                case typeT1: TypeFun => typeT1
                 case _ =>
-                    throw TypeError(t1.pos, s"""left term should be
-                  an abstraction""")
+                    throw TypeError(t1.pos, s"left term should be an abstraction")
             }
 
+            expect(t2, from, to, new ErrorParamType(_, _, _))
+
         case Pair(fst, snd) =>
-            TypePair(typeof(ctx, fst), typeof(ctx, snd))
+            TypePair(typeof(fst), typeof(snd))
 
-        case Fst(Pair(fst, snd)) =>
-            typeof(ctx, fst)
+        case Fst(pair) => typeof(pair) match {
+            case TypePair(fst, snd) => fst
+            case err =>
+                throw TypeError(pair.pos, s"pair type expected but $err found")
+        }
 
-        case Fst(err) =>
-            val typeErr = typeof(ctx, err)
-            throw TypeError(err.pos, s"pair type expected but $typeErr found")
-
-        case Snd(Pair(fst, snd)) =>
-            typeof(ctx, snd)
-
-        case Snd(err) =>
-            val typeErr = typeof(ctx, err)
-            throw TypeError(err.pos, s"pair type expected but $typeErr found")
+        case Snd(pair) => typeof(pair) match {
+            case TypePair(fst, snd) => fst
+            case err =>
+                throw TypeError(pair.pos, s"pair type expected but $err found")
+        }
 
         case _ =>
             throw TypeError(t.pos, s"illegally typed expression: $t")
@@ -298,7 +285,7 @@ object SimplyTyped extends StandardTokenParsers {
         phrase(Term)(tokens) match {
             case Success(trees, _) =>
                 try {
-                    println("typed: " + typeof(Nil, trees))
+                    println("typed: " + typeof(trees))
                     for (t <- path(trees, reduce))
                         println(t)
                 } catch {
