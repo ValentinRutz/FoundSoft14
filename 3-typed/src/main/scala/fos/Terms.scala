@@ -19,24 +19,15 @@ case class Zero() extends Term {
 }
 
 case class Succ(term: Term) extends Term {
-    override def toString = term match {
-        case Application(_, _) => s"succ ($term)"
-        case _ => s"succ $term"
-    }
+    override def toString = s"succ $term"
 }
 
 case class Pred(term: Term) extends Term {
-    override def toString = term match {
-        case Application(_, _) => s"pred ($term)"
-        case _ => s"pred $term"
-    }
+    override def toString = s"pred $term"
 }
 
 case class IsZero(term: Term) extends Term {
-    override def toString = term match {
-        case Application(_, _) => s"iszero ($term)"
-        case _ => s"iszero $term"
-    }
+    override def toString = s"iszero $term"
 }
 
 case class If(cond: Term, thn: Term, els: Term) extends Term {
@@ -50,18 +41,20 @@ case class Variable(name: String) extends Term {
 
 case class Abstraction(param: Variable, typ: Type, body: Term) extends Term {
     override def toString = body match {
-        case _: Application | _: IsZero | _: Variable => s"\\$param:$typ.$body"
-        case _ => s"\\$param:$typ.($body)"
+        case _: Abstraction => s"\\$param:$typ.($body)"
+        case _ => s"\\$param:$typ.$body"
     }
 }
 
 case class Application(fun: Term, arg: Term) extends Term {
+
     private val parFun: String = fun match {
-        case _: Abstraction | _: If => s"($fun)"
+        case Prefix(_) => s"($fun)"
         case _ => s"$fun"
     }
     private val parArg: String = arg match {
-        case _: Application | _: Abstraction => s"($arg)"
+        case _: Application => s"($arg)"
+        case Prefix(_) => s"($arg)"
         case _ => s"$arg"
     }
     override def toString = s"$parFun $parArg"
@@ -107,6 +100,8 @@ case class TypePair(fst: Type, snd: Type) extends Type {
     }
 }
 
+/* Useful extractors */
+
 object Value {
     def unapply(t: Term): Option[Term] = t match {
         case True() | False() | Abstraction(_, _, _) => Some(t)
@@ -125,4 +120,17 @@ object NumericValue {
     }
 
     def unapply(t: Term): Option[Term] = if (isNumericValue(t)) Some(t) else None
+}
+
+object Prefix {
+    def unapply(t: Term): Option[Term] = t match {
+        case IsZero(_)
+            | Succ(_)
+            | Pred(_)
+            | Fst(_)
+            | Snd(_)
+            | If(_, _, _)
+            | Abstraction(_, _, _) => Some(t)
+        case _ => None
+    }
 }
