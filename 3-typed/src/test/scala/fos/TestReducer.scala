@@ -81,4 +81,19 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
         "{ pred 0, 0 }" shouldReduceTo "{0, 0}"
     }
 
+    test("{ 0, pred 0 }") {
+        "{ 0, pred 0 }" shouldReduceTo "{0, 0}"
+    }
+
+    test("{ pred 0, pred 0 }") {
+        "{ pred 0,  pred 0 }" shouldReduceTo "{0, pred 0}"
+    }
+
+    test("fst { pred 0, pred 0 }") {
+        "fst { pred 0,  pred 0 }" shouldReduceTo "fst {0, pred 0}"
+    }
+
+    test("snd { pred 0, pred 0 }") {
+        "snd { pred 0,  pred 0 }" shouldReduceTo "snd {0, pred 0}"
+    }
 }
