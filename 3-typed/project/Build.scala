@@ -61,7 +61,8 @@ object ExerciseBuild extends Build {
       out
     } else {
       // println info for students
-      println("Files to be included in the submission: '" + filesToInclude.mkString(",") + "'")
+      println("Files to be included in the submission: " +
+      filesToInclude.mkString("\n\t- ","\n\t- ", "\n"))
       val config = new Package.Configuration(mappings, out, po)
       Package(config, cacheDir, log)
       out
