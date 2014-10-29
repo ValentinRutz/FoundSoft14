@@ -140,7 +140,7 @@ object SimplyTyped extends StandardTokenParsers {
         case If(True, t, _) => t
         case If(False, _, f) => f
         case IsZero(Zero) => True
-        case IsZero(Succ(_)) => False
+        case IsZero(Succ(NumericValue(_))) => False
         case Pred(Zero) => Zero
         case Pred(Succ(NumericValue(v))) => v
         case Application(Abstraction(param, typ, body), Value(value)) =>

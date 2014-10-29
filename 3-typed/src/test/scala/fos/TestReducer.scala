@@ -42,6 +42,10 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
         "snd {0, true}" shouldReduceTo "true"
     }
 
+    test("iszero succ pred 0") {
+        "iszero succ pred 0" shouldReduceTo "iszero succ 0"
+    }
+
     // CONGRUENCE
 
     test("if term") {
