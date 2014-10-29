@@ -259,8 +259,7 @@ object SimplyTyped extends StandardTokenParsers {
                 throw TypeError(pair.pos, s"pair type expected but $err found")
         }
 
-        case _ =>
-            throw TypeError(t.pos, s"illegally typed expression: $t")
+        case x => throw new AssertionError(s"No rule to type term $x")
 
     }
 
