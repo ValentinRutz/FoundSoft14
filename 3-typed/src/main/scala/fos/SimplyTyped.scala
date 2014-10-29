@@ -104,6 +104,10 @@ object SimplyTyped extends StandardTokenParsers {
             msg + "\n" + pos.longString
     }
 
+    class ErrorParamType(pos: Position, expected: Type, found: Type)
+        extends TypeError(pos,
+            s"parameter type mismatch: expected: $expected, found, $found")
+
     /** The context is a list of variable names paired with their type. */
     type Context = List[(String, Type)]
 
@@ -173,26 +177,33 @@ object SimplyTyped extends StandardTokenParsers {
         /* T-TRUE, T-FALSE */
         case True | False =>
             TypeBool
-        /* T- ISZERO */
-        case IsZero(subterm) if typeof(ctx, subterm) == TypeNat =>
-            TypeBool
+
         /* T-ZERO */
         case Zero =>
             TypeNat
-        /* T-SUCC */
-        case Succ(subterm) if typeof(ctx, subterm) == TypeNat =>
-            TypeNat
+
         /* T-PRED */
         case Pred(subterm) if typeof(ctx, subterm) == TypeNat =>
             TypeNat
+
+        /* T-SUCC */
+        case Succ(subterm) if typeof(ctx, subterm) == TypeNat =>
+            TypeNat
+
+        /* T- ISZERO */
+        case IsZero(subterm) if typeof(ctx, subterm) == TypeNat =>
+            TypeBool
+
         /* T-ISZERO, T-SUCC, T-PRED Errors */
         case err @ (IsZero(_) | Succ(_) | Pred(_)) =>
             val typeErr = typeof(ctx, err)
             throw TypeError(err.pos, s"parameter type mismatch: expected: Nat, found, $typeErr")
+
         /* T-IF */
         case If(cond, thenn, elz) if typeof(ctx, cond) == TypeBool &&
             typeof(ctx, thenn) == typeof(ctx, elz) =>
             typeof(ctx, thenn)
+
         /* T-IF Errors */
         case err @ If(cond, thenn, elz) if typeof(ctx, cond) != TypeBool =>
             val typeCond = typeof(ctx, cond)
@@ -203,14 +214,17 @@ object SimplyTyped extends StandardTokenParsers {
             val typeElse = typeof(ctx, elz)
             throw TypeError(err.pos, s"""$thenn and $elz should have the same type.
                  Found: then=$typeThen != else=$typeElse""")
+
         /* T-VAR */
         case Variable(name) if ctx.exists(_._1 == name) =>
             (ctx find (_._1 == name)).get._2
         case v @ Variable(name) =>
             throw TypeError(v.pos, s"variable $name is not in the context")
+
         /* T-ABS */
         case Abstraction(Variable(param), typ, body) =>
             TypeFun(typ, typeof((param, typ) :: ctx, body))
+
         /* T-APP */
         case Application(t1, t2) =>
             val typeT2 = typeof(ctx, t2)
@@ -223,18 +237,24 @@ object SimplyTyped extends StandardTokenParsers {
                     throw TypeError(t1.pos, s"""left term should be
                   an abstraction""")
             }
+
         case Pair(fst, snd) =>
             TypePair(typeof(ctx, fst), typeof(ctx, snd))
+
         case Fst(Pair(fst, snd)) =>
             typeof(ctx, fst)
+
         case Fst(err) =>
             val typeErr = typeof(ctx, err)
             throw TypeError(err.pos, s"pair type expected but $typeErr found")
+
         case Snd(Pair(fst, snd)) =>
             typeof(ctx, snd)
+
         case Snd(err) =>
             val typeErr = typeof(ctx, err)
             throw TypeError(err.pos, s"pair type expected but $typeErr found")
+
         case _ =>
             throw TypeError(t.pos, s"illegally typed expression: $t")
 
