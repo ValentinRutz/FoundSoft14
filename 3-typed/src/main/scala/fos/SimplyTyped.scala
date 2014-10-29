@@ -254,7 +254,7 @@ object SimplyTyped extends StandardTokenParsers {
         }
 
         case Snd(pair) => typeof(pair) match {
-            case TypePair(fst, snd) => fst
+            case TypePair(fst, snd) => snd
             case err =>
                 throw TypeError(pair.pos, s"pair type expected but $err found")
         }
