@@ -155,8 +155,8 @@ object SimplyTyped extends StandardTokenParsers {
         case Application(Value(v), t) => Application(v, reduce(t))
         case Application(t1, t2) =>
             Application(reduce(t1), t2)
-        case Fst(Pair(Value(fst), snd)) => Fst(Pair(fst, reduce(snd)))
-        case Snd(Pair(Value(fst), snd)) => Snd(Pair(fst, reduce(snd)))
+        case Pair(Value(fst), snd) => Pair(fst, reduce(snd))
+        case Pair(fst, snd) => Pair(reduce(fst), snd)
         case Fst(Pair(fst, snd)) => Fst(Pair(reduce(fst), snd))
         case Snd(Pair(fst, snd)) => Snd(Pair(reduce(fst), snd))
         case _ => throw NoRuleApplies(t)

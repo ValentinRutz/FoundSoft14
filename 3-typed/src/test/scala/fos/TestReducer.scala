@@ -77,4 +77,8 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
         "(\\x: Nat. (\\dummy: Nat. \\y: Nat. y) 1) 0 ((\\x: Nat->Nat. x) 0)" shouldReduceTo "(\\dummy: Nat. \\y: Nat. y) 1 ((\\x: Nat->Nat. x) 0)"
     }
 
+    test("{ pred 0, 0 }") {
+        "{ pred 0, 0 }" shouldReduceTo "{0, 0}"
+    }
+
 }
