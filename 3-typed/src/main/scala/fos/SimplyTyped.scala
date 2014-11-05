@@ -318,7 +318,7 @@ object SimplyTyped extends StandardTokenParsers {
                 expect(elem, left, new ErrorParamType(_, _, _))
                 typ
             case err =>
-                throw TypeError(typ.pos, s"sum type expecte but $err found")
+                throw TypeError(typ.pos, s"sum type expected but $err found")
         }
 
         /* T-INR */
@@ -327,14 +327,14 @@ object SimplyTyped extends StandardTokenParsers {
                 expect(elem, right, new ErrorParamType(_, _, _))
                 typ
             case err =>
-                throw TypeError(typ.pos, s"sum type expecte but $err found")
+                throw TypeError(typ.pos, s"sum type expected but $err found")
         }
 
         /* T-CASE */
         case Case(elem, lVal, lTerm, rVal, rTerm) => typeof(elem) match {
             case TypeSum(typeL, typeR) => {
                 val finalTypeL = typeof(lTerm)((lVal.name, typeL) :: ctx)
-                val finalTypeR = typeof(rTerm)((lVal.name, typeR) :: ctx)
+                val finalTypeR = typeof(rTerm)((rVal.name, typeR) :: ctx)
                 if (finalTypeL == finalTypeR) finalTypeL
                 else throw TypeError(rTerm.pos, s"type mismatch : $finalTypeL expected but $finalTypeR found")
             }
