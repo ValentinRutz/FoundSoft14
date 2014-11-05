@@ -66,31 +66,22 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
 
     test("if term") {
         "if iszero 0 then true else false" shouldReduceTo "if true then true else false"
-        "if pred 0 then true else { 0, true }" shouldReduceTo "if 0 then true else { 0, true }"
     }
 
     test("iszero term") {
         "iszero pred 0" shouldReduceTo "iszero 0"
-        "iszero snd {0, true}" shouldReduceTo "iszero true"
     }
 
     test("succ term") {
         "succ pred 0" shouldReduceTo "succ 0"
-        "succ snd {0, true}" shouldReduceTo "succ true"
     }
 
     test("pred term") {
         "pred pred 0" shouldReduceTo "pred 0"
-        "pred snd {0, true}" shouldReduceTo "pred true"
     }
 
     test("value term") {
         "(\\x: Nat. pred 0) pred 0" shouldReduceTo "(\\x: Nat. pred 0) 0"
-        "(\\x: Bool. pred true) pred 0" shouldReduceTo "(\\x: Bool. pred true) 0"
-    }
-
-    test("term1 term2") {
-        "(\\x: Nat. (\\dummy: Nat. \\y: Nat. y) 1) 0 ((\\x: Nat->Nat. x) 0)" shouldReduceTo "(\\dummy: Nat. \\y: Nat. y) 1 ((\\x: Nat->Nat. x) 0)"
     }
 
     test("{ pred 0, 0 }") {
@@ -123,7 +114,7 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
     }
 
     test("case term _") {
-        "case pred 0 of inl l => pred succ 0 | inr r => succ pred 0" shouldReduceTo "case 0 of inl l => pred succ 0 | inr r => succ pred 0"
+        "case (\\d:Nat+Nat.d) inl 0 as Nat+Nat of inl l => pred succ 0 | inr r => succ pred 0" shouldReduceTo "case inl 0 as Nat+Nat of inl l => pred succ 0 | inr r => succ pred 0"
     }
 
     test("inl term") {
