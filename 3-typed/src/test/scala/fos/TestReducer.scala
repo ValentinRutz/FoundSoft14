@@ -46,6 +46,18 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
         "iszero succ pred 0" shouldReduceTo "iszero succ 0"
     }
 
+    test("case inl value") {
+        "case inl 0 as Nat+Bool of inl l => iszero l | inr r => pred 0" shouldReduceTo "iszero 0"
+
+        "case inl 0 as Nat+Bool of inl l => pred 0 | inr r => pred succ 0" shouldReduceTo "pred 0"
+    }
+
+    test("case inr value") {
+        "case inr 0 as Nat+Bool of inl l => pred 0 | inr r => iszero r" shouldReduceTo "iszero 0"
+
+        "case inr 0 as Nat+Bool of inl l => pred 0 | inr r => pred succ 0" shouldReduceTo "pred succ 0"
+    }
+
     // CONGRUENCE
 
     test("if term") {
@@ -98,11 +110,24 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
     }
 
     val values = Seq("true", "false", "succ succ 0", """\x:Bool.x""",
-        "{0,true}", "{{0, true}, succ 1}")
+        "{0,true}", "{{0, true}, succ 1}", "inl 0 as Nat+Nat", "inr 0 as Nat+Nat")
 
     values.foreach { term =>
         test(s"Value $term should not reduce further") {
             term shouldReduceTo term
         }
     }
+
+    test("case term _") {
+        "case pred 0 of inl l => pred succ 0 | inr r => succ pred 0" shouldReduceTo "case 0 of inl l => pred succ 0 | inr r => succ pred 0"
+    }
+
+    test("inl term") {
+        "inl pred 0 as Nat+Nat" shouldReduceTo "inl 0 as Nat+Nat"
+    }
+
+    test("inr term") {
+        "inr pred 0 as Nat+Nat" shouldReduceTo "inr 0 as Nat+Nat"
+    }
+
 }
