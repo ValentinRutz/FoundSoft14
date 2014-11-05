@@ -193,6 +193,8 @@ object SimplyTyped extends StandardTokenParsers {
             subst(lTerm)(lVar.name, v)
         case Case(InjectRight(Value(v), _), _, _, rVar, rTerm) =>
             subst(rTerm)(rVar.name, v)
+        case fix @ Fix(Abstraction(param, typ, body)) =>
+            subst(body)(param.name, fix)
         // CONGRUENCE
         case If(c, t, e) => If(reduce(c), t, e)
         case IsZero(t) => IsZero(reduce(t))
@@ -209,6 +211,7 @@ object SimplyTyped extends StandardTokenParsers {
             Case(reduce(elem), lVar, lTerm, rVar, rTerm)
         case InjectLeft(elem, typ) => InjectLeft(reduce(elem), typ)
         case InjectRight(elem, typ) => InjectRight(reduce(elem), typ)
+        case Fix(func) => Fix(reduce(func))
         case _ => throw NoRuleApplies(t)
     }
 
