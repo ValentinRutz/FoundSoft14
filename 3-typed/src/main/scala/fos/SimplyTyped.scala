@@ -146,10 +146,8 @@ object SimplyTyped extends StandardTokenParsers {
     def subst(tree: Term)(implicit x: String, s: Term): Term = tree match {
         case Variable(name) if (name == x) => s
         case Application(fun, arg) => Application(subst(fun), subst(arg))
-        case a @ Abstraction(param, _, _) if (param.name == x) => a
-        case Abstraction(param, typ, body) => {
-            Abstraction(param, typ, subst(body))
-        }
+        case Abstraction(param, typ, body) =>
+            Abstraction(param, typ, substBindingTerm(param, body))
         case Succ(term) => Succ(subst(term))
         case Pred(term) => Pred(subst(term))
         case IsZero(term) => IsZero(subst(term))
@@ -157,8 +155,22 @@ object SimplyTyped extends StandardTokenParsers {
         case Pair(fst, snd) => Pair(subst(fst), subst(snd))
         case Fst(pair) => Fst(subst(pair))
         case Snd(pair) => Snd(subst(pair))
+        case InjectLeft(elem, typ) => InjectLeft(subst(elem), typ)
+        case InjectRight(elem, typ) => InjectRight(subst(elem), typ)
+        case Case(elem, lVar, lTerm, rVar, rTerm) =>
+            Case(subst(elem),
+                lVar, substBindingTerm(lVar, lTerm),
+                rVar, substBindingTerm(rVar, rTerm))
         case _ => tree
     }
+
+    /**
+      * Helper function that controls substitution in expression with bound
+      * variable.
+      * The concrete cases are Abstraction and Case branches
+      */
+    def substBindingTerm(binding: Variable, body: Term)(implicit x: String, s: Term): Term =
+        if (binding.name == x) body else subst(body)
 
     /** Call by value reducer. */
     // Note: many points are simplified from untyped reducer, since bad input does not typecheck
