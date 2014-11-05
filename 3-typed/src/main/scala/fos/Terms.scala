@@ -61,15 +61,15 @@ case class Application(fun: Term, arg: Term) extends Term {
 }
 
 case class Pair(fst: Term, snd: Term) extends Term {
-    override def toString = s"""{$fst, $snd}"""
+    override def toString = s"{$fst, $snd}"
 }
 
 case class Fst(pair: Term) extends Term {
-    override def toString = s"""fst $pair"""
+    override def toString = s"fst $pair"
 }
 
 case class Snd(pair: Term) extends Term {
-    override def toString = s"""snd $pair"""
+    override def toString = s"snd $pair"
 }
 
 case class InjectLeft(elem: Term, typ: Type) extends Term {
@@ -86,6 +86,11 @@ case class Case(elem: Term,
     override def toString =
         s"case $elem of inl $lVar => $lTerm | inr $rVar => $rTerm"
 }
+
+case class Fix(func: Term) extends Term {
+    override def toString = s"fix $func"
+}
+
 /** Abstract Syntax Trees for types. */
 abstract class Type extends Term
 
@@ -105,17 +110,31 @@ case class TypeFun(from: Type, to: Type) extends Type {
 }
 
 case class TypePair(fst: Type, snd: Type) extends Type {
-    override def toString = (fst, snd) match {
-        case (TypeFun(_, _) | TypePair(_, _), TypeFun(_, _) | TypePair(_, _)) =>
-            s"($fst)*($snd)"
-        case (_, TypeFun(_, _) | TypePair(_, _)) => s"$fst*($snd)"
-        case (TypeFun(_, _) | TypePair(_, _), _) => s"($fst)*$snd"
-        case _ => s"$fst*$snd"
+    private def fstStr = fst match {
+        case _: TypeFun | _: TypePair | _: TypeSum => s"($fst)"
+        case _ => s"$fst"
     }
+
+    private def sndStr = snd match {
+        case _: TypeFun => s"($snd)"
+        case _ => s"$snd"
+    }
+
+    override def toString = s"$fstStr*$sndStr"
 }
 
 case class TypeSum(left: Type, right: Type) extends Type {
-    override def toString = s"$left+$right"
+    private def lStr = left match {
+        case _: TypeFun | _: TypePair | _: TypeSum => s"($left)"
+        case _ => s"$left"
+    }
+
+    private def rStr = right match {
+        case _: TypeFun => s"($right)"
+        case _ => s"$right"
+    }
+
+    override def toString = s"$lStr+$rStr"
 }
 
 /* Useful extractors */
@@ -150,7 +169,9 @@ object Prefix {
             | Fst(_)
             | Snd(_)
             | If(_, _, _)
-            | Abstraction(_, _, _) => Some(t)
+            | Abstraction(_, _, _)
+            | Case(_, _, _, _, _)
+            | Fix(_) => Some(t)
         case _ => None
     }
 }

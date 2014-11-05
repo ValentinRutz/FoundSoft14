@@ -15,7 +15,9 @@ class ToStringChecks extends FunSuite with Matchers {
 
     val terms = Seq("true", "false", "if true then true else true", "0",
         "pred 0", "succ 0", "iszero 0", "x", """\x:Nat.x""", "t t", "{0, 0}",
-        "fst {0, 0}", "snd {0, 0}", "{{0, true}, 0}", "(((((((0)))))))")
+        "fst {0, 0}", "snd {0, 0}", "{{0, true}, 0}", "(((((((0)))))))",
+        """\x:Nat.x y x""", """(\x:Nat.x) y x""",
+        "(case 0 of inl y => t | inr x => t) a")
 
     terms.foreach { term =>
         test(s"toString should be well behaved on $term") {
