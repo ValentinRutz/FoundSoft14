@@ -1,0 +1,5 @@
+ - Write test to check that error messages do not contain '$'
+ - Implement substitution for new types
+ - Check typer and evaluator (Damien + Valetin)
+ - Write tests to have reasonable statement coverage
+ - Implement repl (Damien)
