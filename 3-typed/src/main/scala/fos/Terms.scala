@@ -105,17 +105,31 @@ case class TypeFun(from: Type, to: Type) extends Type {
 }
 
 case class TypePair(fst: Type, snd: Type) extends Type {
-    override def toString = (fst, snd) match {
-        case (TypeFun(_, _) | TypePair(_, _), TypeFun(_, _) | TypePair(_, _)) =>
-            s"($fst)*($snd)"
-        case (_, TypeFun(_, _) | TypePair(_, _)) => s"$fst*($snd)"
-        case (TypeFun(_, _) | TypePair(_, _), _) => s"($fst)*$snd"
-        case _ => s"$fst*$snd"
+    private def fstStr = fst match {
+        case _: TypeFun | _: TypePair | _: TypeSum => s"($fst)"
+        case _ => s"$fst"
     }
+
+    private def sndStr = snd match {
+        case _: TypeFun => s"($snd)"
+        case _ => s"$snd"
+    }
+
+    override def toString = s"$fstStr*$sndStr"
 }
 
 case class TypeSum(left: Type, right: Type) extends Type {
-    override def toString = s"$left+$right"
+    private def lStr = left match {
+        case _: TypeFun | _: TypePair | _: TypeSum => s"($left)"
+        case _ => s"$left"
+    }
+
+    private def rStr = right match {
+        case _: TypeFun => s"($right)"
+        case _ => s"$right"
+    }
+
+    override def toString = s"$lStr+$rStr"
 }
 
 /* Useful extractors */
