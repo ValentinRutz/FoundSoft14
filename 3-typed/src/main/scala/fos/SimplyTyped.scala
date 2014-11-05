@@ -313,14 +313,22 @@ object SimplyTyped extends StandardTokenParsers {
         }
 
         /* T-INL */
-        case InjectLeft(elem, typ @ TypeSum(left, _)) =>
-            expect(elem, left, new ErrorParamType(_, _, _))
-            typ
+        case InjectLeft(elem, typ) => typ match {
+            case TypeSum(left, _) =>
+                expect(elem, left, new ErrorParamType(_, _, _))
+                typ
+            case err =>
+                throw TypeError(typ.pos, s"sum type expecte but $err found")
+        }
 
         /* T-INR */
-        case InjectRight(elem, typ @ TypeSum(_, right)) =>
-            expect(elem, right, new ErrorParamType(_, _, _))
-            typ
+        case InjectRight(elem, typ) => typ match {
+            case TypeSum(_, right) =>
+                expect(elem, right, new ErrorParamType(_, _, _))
+                typ
+            case err =>
+                throw TypeError(typ.pos, s"sum type expecte but $err found")
+        }
 
         /* T-CASE */
         case Case(elem, lVal, lTerm, rVal, rTerm) => typeof(elem) match {
