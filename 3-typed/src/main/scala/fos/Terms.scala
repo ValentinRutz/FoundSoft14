@@ -124,6 +124,8 @@ object Value {
     def unapply(t: Term): Option[Term] = t match {
         case True() | False() | Abstraction(_, _, _) => Some(t)
         case Pair(Value(_), Value(_)) => Some(t)
+        case InjectLeft(Value(_), _) => Some(t)
+        case InjectRight(Value(_), _) => Some(t)
         case NumericValue(x) => Some(t)
         case _ => None
     }
