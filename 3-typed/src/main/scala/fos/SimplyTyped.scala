@@ -168,6 +168,9 @@ object SimplyTyped extends StandardTokenParsers {
       * Helper function that controls substitution in expression with bound
       * variable.
       * The concrete cases are Abstraction and Case branches
+      *
+      * @param binding The variable declaration that may shadow the substitution
+      * @param body The term with new binding that may get substituted
       */
     def substBindingTerm(binding: Variable, body: Term)(implicit x: String, s: Term): Term =
         if (binding.name == x) body else subst(body)
@@ -320,6 +323,15 @@ object SimplyTyped extends StandardTokenParsers {
             }
             case err =>
                 throw TypeError(elem.pos, s"sum type expected but $err found")
+        }
+
+        /* T-FIX */
+        case Fix(func) => typeof(func) match {
+            case TypeFun(from, to) if (from == to) => from
+            case typ @ TypeFun(from, _) =>
+                val expTyp = TypeFun(from, from)
+                throw TypeError(func.pos, s"type mismatch : $expTyp expected but $typ found")
+            case err => throw TypeError(func.pos, s"bad type : Function type expected (T->T) but $err found")
         }
 
         case x => throw new AssertionError(s"No rule to type term $x")
