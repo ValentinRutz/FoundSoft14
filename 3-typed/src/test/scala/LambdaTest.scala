@@ -50,7 +50,6 @@ trait LambdaTest {
             val term = parseTerm(input)
             val result = try {
                 val res = reduceFun(term)
-                typeof(term)
                 res
             } catch {
                 case NoRuleApplies(_) => term
