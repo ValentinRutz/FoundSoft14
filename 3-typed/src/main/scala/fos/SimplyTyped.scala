@@ -258,13 +258,13 @@ object SimplyTyped extends StandardTokenParsers {
             expect(cond, TypeBool(),
                 (pos, expected, found) =>
                     TypeError(pos, s"Condition should be a boolean. " +
-                        "Found $found"))
+                        s"Found $found"))
 
             val typeThen = typeof(thenn)
             expect(els, typeThen,
                 (pos, expected, found) =>
                     TypeError(pos, s"then and else part should have the same type. " +
-                        "Found: then=$expected != else=$found"))
+                        s"Found: then=$expected != else=$found"))
 
         /* T-VAR */
         case v @ Variable(name) => (ctx find (_._1 == name)) map {
