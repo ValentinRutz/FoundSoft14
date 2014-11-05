@@ -211,7 +211,7 @@ object SimplyTyped extends StandardTokenParsers {
 
     /**
       * Small helper function that checks that <code>t</code> is well typed with
-      * type <code>expected</code> and returns <code>finalType</code> if it is
+      * type <code>expected</code> and returns <code>expected</code> if it is
       * the case
       *
       * @param error The function that will generate the error message from the
