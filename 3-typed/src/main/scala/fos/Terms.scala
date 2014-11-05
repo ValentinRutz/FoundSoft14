@@ -145,7 +145,7 @@ object Value {
         case Pair(Value(_), Value(_)) => Some(t)
         case InjectLeft(Value(_), _) => Some(t)
         case InjectRight(Value(_), _) => Some(t)
-        case NumericValue(x) => Some(t)
+        case NumericValue(_) => Some(t)
         case _ => None
     }
 }
