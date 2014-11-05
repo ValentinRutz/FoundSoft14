@@ -61,15 +61,15 @@ case class Application(fun: Term, arg: Term) extends Term {
 }
 
 case class Pair(fst: Term, snd: Term) extends Term {
-    override def toString = s"""{$fst, $snd}"""
+    override def toString = s"{$fst, $snd}"
 }
 
 case class Fst(pair: Term) extends Term {
-    override def toString = s"""fst $pair"""
+    override def toString = s"fst $pair"
 }
 
 case class Snd(pair: Term) extends Term {
-    override def toString = s"""snd $pair"""
+    override def toString = s"snd $pair"
 }
 
 case class InjectLeft(elem: Term, typ: Type) extends Term {
@@ -86,6 +86,11 @@ case class Case(elem: Term,
     override def toString =
         s"case $elem of inl $lVar => $lTerm | inr $rVar => $rTerm"
 }
+
+case class Fix(func: Term) extends Term {
+    override def toString = s"fix $func"
+}
+
 /** Abstract Syntax Trees for types. */
 abstract class Type extends Term
 
@@ -163,7 +168,8 @@ object Prefix {
             | Snd(_)
             | If(_, _, _)
             | Abstraction(_, _, _)
-            | Case(_, _, _, _, _) => Some(t)
+            | Case(_, _, _, _, _)
+            | Fix(_) => Some(t)
         case _ => None
     }
 }
