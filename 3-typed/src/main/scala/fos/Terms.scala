@@ -162,7 +162,8 @@ object Prefix {
             | Fst(_)
             | Snd(_)
             | If(_, _, _)
-            | Abstraction(_, _, _) => Some(t)
+            | Abstraction(_, _, _)
+            | Case(_, _, _, _, _) => Some(t)
         case _ => None
     }
 }
