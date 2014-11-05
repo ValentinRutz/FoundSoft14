@@ -36,6 +36,9 @@ class TestTyper extends FunSuite with Matchers with LambdaTest {
     typeError("fst 0")
     typeError("snd true")
     typeError("x")
+    typeError(
+        """letrec treeify: Nat->(Nat*Nat) = if iszero n then {0, 0} else
+        {treeify pred n, treeify pred n} in treeify 0""")
 
     val simpleSumTyped = Seq(
         // Injections left
@@ -48,9 +51,12 @@ class TestTyper extends FunSuite with Matchers with LambdaTest {
         "inr if iszero 0 then true else false as Nat+Bool",
         "inr iszero 1 as Nat+Bool", "inr fst {true, 0} as Nat+Bool",
         "let x: Nat+Bool = inr false as Nat+Bool in x")
+
     simpleSumTyped.foreach(expectedType(_, "Nat+Bool"))
 
     val moreComplexSumTyped = Seq("inl inr iszero 6 as (Nat*Bool)+Bool as ((Nat*Bool)+Bool)+(Bool*Bool)",
-        "inl inl {succ 0, iszero fst {6, 3}} as (Nat*Bool)+Bool as ((Nat*Bool)+Bool)+(Bool*Bool)")
+        "inl inl {succ 0, iszero fst {6, 3}} as (Nat*Bool)+Bool as ((Nat*Bool)+Bool)+(Bool*Bool)",
+        "inr {true, true} as ((Nat*Bool)+Bool)+(Bool*Bool)")
+
     moreComplexSumTyped.foreach(expectedType(_, "((Nat*Bool)+Bool)+(Bool*Bool)"))
 }

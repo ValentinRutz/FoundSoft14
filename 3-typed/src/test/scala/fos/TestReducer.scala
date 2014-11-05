@@ -134,4 +134,13 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
     test("Substitution in fix should behave as expected") {
         """(\x:Nat.fix \d:Nat.d) 0""" shouldReduceTo """fix \d:Nat.d"""
     }
+
+    test("letrec rec: Nat = \\n:Nat.if iszero n then 1 else rec pred n in rec 2") {
+        """letrec rec: Nat = \n:Nat.if iszero n then 1 else
+        rec pred n in rec 2""".fullReduce("1")(reduce)
+    }
+    test("let rec: Nat->Nat = fix \\n: Nat.if iszero n then 1 else rec pred n in rec 4") {
+        """let rec: Nat->Nat =fix \n: Nat.if iszero n then 1 else
+        rec pred n in rec 4""".fullReduce("1")(reduce)
+    }
 }
