@@ -76,6 +76,10 @@ class TestTermParser extends FunSuite with Matchers with LambdaTest {
         "if true then true else false" shouldParseTo If(True(), True(), False())
     }
 
+    test("Parse let") {
+        "let x: Nat = y in z" shouldParseTo Application(Abstraction(x, Nat, z), y)
+    }
+
     test("Parse Pair") {
         "{ false, 0 }" shouldParseTo Pair(False(), Zero())
     }
@@ -107,5 +111,14 @@ class TestTermParser extends FunSuite with Matchers with LambdaTest {
         val expr2 = "case 0 of inl x => 0 | inr y => false"
         val parsed2 = Case(Zero(), x, Zero(), y, False())
         expr2 shouldParseTo parsed2
+    }
+
+    test("Parse fix") {
+        "fix \\x: Nat->Nat. x" shouldParseTo Fix(Abstraction(x, TypeFun(Nat, Nat), x))
+        "fix 0" shouldParseTo Fix(Zero())
+    }
+
+    test("Parse letrec") {
+        "letrec x: Nat = x in x" shouldParseTo "let x: Nat = fix \\x: Nat.x in x"
     }
 }
