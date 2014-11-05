@@ -87,4 +87,25 @@ class TestTermParser extends FunSuite with Matchers with LambdaTest {
     test("Parse Snd") {
         "snd 0" shouldParseTo Snd(Zero())
     }
+
+    test("Parse inl") {
+        "inl 0 as Nat + Bool" shouldParseTo InjectLeft(Zero(), TypeSum(Nat, Bool))
+        "inl 0 as Bool" shouldParseTo InjectLeft(Zero(), Bool)
+    }
+
+    test("Parse inr") {
+        "inr 0 as Bool + Nat" shouldParseTo InjectRight(Zero(), TypeSum(Bool, Nat))
+        "inr 0 as Bool" shouldParseTo InjectRight(Zero(), Bool)
+    }
+
+    test("Parse case") {
+        val expr1 = "case inl 0 as Nat + Bool of inl x => true | inr y => false"
+        val parsed1 =
+            Case(InjectLeft(Zero(), TypeSum(Nat, Bool)), x, True(), y, False())
+        expr1 shouldParseTo parsed1
+
+        val expr2 = "case 0 of inl x => 0 | inr y => false"
+        val parsed2 = Case(Zero(), x, Zero(), y, False())
+        expr2 shouldParseTo parsed2
+    }
 }
