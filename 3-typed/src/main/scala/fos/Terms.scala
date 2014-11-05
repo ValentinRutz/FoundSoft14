@@ -72,6 +72,20 @@ case class Snd(pair: Term) extends Term {
     override def toString = s"""snd $pair"""
 }
 
+case class InjectLeft(elem: Term, typ: Type) extends Term {
+    override def toString = s"inl $elem as $typ"
+}
+
+case class InjectRight(elem: Term, typ: Type) extends Term {
+    override def toString = s"inr $elem as $typ"
+}
+
+case class Case(elem: Term,
+                lVar: Variable, lTerm: Term,
+                rVar: Variable, rTerm: Term) extends Term {
+    override def toString =
+        s"case $elem of inl $lVar => $lTerm | inr $rVar => $rTerm"
+}
 /** Abstract Syntax Trees for types. */
 abstract class Type extends Term
 
@@ -98,6 +112,10 @@ case class TypePair(fst: Type, snd: Type) extends Type {
         case (TypeFun(_, _) | TypePair(_, _), _) => s"($fst)*$snd"
         case _ => s"$fst*$snd"
     }
+}
+
+case class TypeSum(left: Type, right: Type) extends Type {
+    override def toString = s"$left + $right"
 }
 
 /* Useful extractors */

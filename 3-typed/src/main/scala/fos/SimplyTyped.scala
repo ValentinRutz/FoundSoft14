@@ -23,20 +23,22 @@ object SimplyTyped extends StandardTokenParsers {
             | failure("illegal start of term"))
 
     /**
-      * SimpleTerm ::= "true"
-      *               | "false"
-      *               | number
-      *               | "succ" Term
-      *               | "pred" Term
-      *               | "iszero" Term
-      *               | "if" Term "then" Term "else" Term
-      *               | ident
-      *               | "\" ident ":" Type "." Term
-      *               | "(" Term ")"
-      *               | "let" ident ":" Type "=" Term "in" Term
-      *               | "{" Term "," Term "}"
-      *               | "fst" Term
-      *               | "snd" Term
+      * SimpleTerm ::=
+      *       "true"
+      *     | "false"
+      *     | number
+      *     | "succ" Term
+      *     | "pred" Term
+      *     | "iszero" Term
+      *     | "if" Term "then" Term "else" Term
+      *     | ident
+      *     | "\" ident ":" Type "." Term
+      *     | "{" Term "," Term "}"
+      *     | "fst" Term
+      *     | "snd" Term
+      *     | "inl" Term "as" Type
+      *     | "inr" Term "as" Type
+      *     | "case" Term "of" "inl" ident "=>" Term "|" "inr" ident "=>" Term
       */
     def SimpleTerm: Parser[Term] = positioned(
         "true" ^^^ True()
