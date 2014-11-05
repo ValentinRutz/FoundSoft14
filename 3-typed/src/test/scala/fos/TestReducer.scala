@@ -139,9 +139,8 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
         """letrec rec: Nat->Nat = \n:Nat.if iszero n then 1 else
         rec pred n in rec 2""".fullReduce("1")(reduce)
     }
-    test("let rec: Nat->Nat = fix \\rec: Nat.if iszero n then 1 else rec pred n in rec 4") {
-        pending
-        """let rec: Nat->Nat =fix \n: Nat.if iszero n then 1 else
-        rec pred n in rec 2""".fullReduce("1")(reduce)
+    test("let rec: Nat->Nat = fix \\rec: Nat->Nat.\\n: Nat.if iszero n then 1 else rec pred n in rec 4") {
+        """let rec: Nat->Nat =fix \rec: Nat->Nat.\n: Nat.if iszero n then 1 else
+        rec pred n in rec 4""".fullReduce("1")(reduce)
     }
 }
