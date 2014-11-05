@@ -130,4 +130,8 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
         "inr pred 0 as Nat+Nat" shouldReduceTo "inr 0 as Nat+Nat"
     }
 
+    // SUBSTITUTION
+    test("Substitution in fix should behave as expected") {
+        """(\x:Nat.fix \d:Nat.d) 0""" shouldReduceTo """fix \d:Nat.d"""
+    }
 }

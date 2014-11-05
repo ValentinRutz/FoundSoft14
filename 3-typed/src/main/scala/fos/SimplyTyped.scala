@@ -161,6 +161,7 @@ object SimplyTyped extends StandardTokenParsers {
             Case(subst(elem),
                 lVar, substBindingTerm(lVar, lTerm),
                 rVar, substBindingTerm(rVar, rTerm))
+        case Fix(term) => Fix(subst(term))
         case Zero() | True() | False() | Variable(_) => tree
         case _ => throw new AssertionError(s"Don't know term $tree")
     }
