@@ -37,7 +37,9 @@ trait LambdaTest {
         }
 
         def fullReduce(expectedTree: Term)(reduceFun: Term => Term): Unit = {
-            eval(reduceFun)(parseTerm(input)) shouldBe expectedTree
+            val tree = parseTerm(input)
+            typeof(tree)
+            eval(reduceFun)(tree) shouldBe expectedTree
         }
 
         def fullReduce(expectedTree: String)(reduceFun: Term => Term): Unit = {
