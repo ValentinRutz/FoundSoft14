@@ -165,6 +165,10 @@ object SimplyTyped extends StandardTokenParsers {
             subst(body)(param.name, value)
         case Fst(Pair(Value(fst), Value(_))) => fst
         case Snd(Pair(Value(_), Value(snd))) => snd
+        case Case(InjectLeft(Value(v), _), lVar, lTerm, _, _) =>
+            subst(lTerm)(lVar.name, v)
+        case Case(InjectRight(Value(v), _), _, _, rVar, rTerm) =>
+            subst(rTerm)(rVar.name, v)
         // CONGRUENCE
         case If(c, t, e) => If(reduce(c), t, e)
         case IsZero(t) => IsZero(reduce(t))
@@ -177,6 +181,10 @@ object SimplyTyped extends StandardTokenParsers {
         case Pair(fst, snd) => Pair(reduce(fst), snd)
         case Fst(pair) => Fst(reduce(pair))
         case Snd(pair) => Snd(reduce(pair))
+        case Case(elem, lVar, lTerm, rVar, rTerm) =>
+            Case(reduce(elem), lVar, lTerm, rVar, rTerm)
+        case InjectLeft(elem, typ) => InjectLeft(reduce(elem), typ)
+        case InjectRight(elem, typ) => InjectRight(reduce(elem), typ)
         case _ => throw NoRuleApplies(t)
     }
 
