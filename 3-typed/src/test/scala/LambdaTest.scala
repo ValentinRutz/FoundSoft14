@@ -49,6 +49,7 @@ trait LambdaTest {
         def test(expectedTree: Term)(reduceFun: Term => Term): Unit = {
             val term = parseTerm(input)
             val result = try {
+                typeof(term)
                 val res = reduceFun(term)
                 res
             } catch {

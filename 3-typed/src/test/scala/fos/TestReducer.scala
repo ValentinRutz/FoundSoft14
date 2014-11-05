@@ -127,7 +127,6 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
 
     test("fix term") {
         "fix (\\x: Nat.\\y:Nat. y) 0" shouldReduceTo "fix \\y: Nat.y"
-        "fix pred 0" shouldReduceTo "fix 0"
     }
 
     // SUBSTITUTION
