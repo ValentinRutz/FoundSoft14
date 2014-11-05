@@ -47,15 +47,15 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
     }
 
     test("case inl value") {
-        "case inl 0 as Nat+Bool of inl l => iszero l | inr r => pred 0" shouldReduceTo "iszero 0"
+        "case inl 0 as Nat+Bool of inl l => iszero l | inr r => false" shouldReduceTo "iszero 0"
 
         "case inl 0 as Nat+Bool of inl l => pred 0 | inr r => pred succ 0" shouldReduceTo "pred 0"
     }
 
     test("case inr value") {
-        "case inr 0 as Nat+Bool of inl l => pred 0 | inr r => iszero r" shouldReduceTo "iszero 0"
+        "case inr 0 as Bool+Nat of inl l => true | inr r => iszero r" shouldReduceTo "iszero 0"
 
-        "case inr 0 as Nat+Bool of inl l => pred 0 | inr r => pred succ 0" shouldReduceTo "pred succ 0"
+        "case inr 0 as Bool+Nat of inl l => pred 0 | inr r => pred succ 0" shouldReduceTo "pred succ 0"
     }
 
     // CONGRUENCE
