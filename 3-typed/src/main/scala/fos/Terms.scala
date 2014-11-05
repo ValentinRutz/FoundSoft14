@@ -115,7 +115,7 @@ case class TypePair(fst: Type, snd: Type) extends Type {
 }
 
 case class TypeSum(left: Type, right: Type) extends Type {
-    override def toString = s"$left + $right"
+    override def toString = s"$left+$right"
 }
 
 /* Useful extractors */

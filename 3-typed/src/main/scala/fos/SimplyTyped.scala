@@ -9,9 +9,11 @@ import scala.util.parsing.input._
   *  the TAPL book.
   */
 object SimplyTyped extends StandardTokenParsers {
-    lexical.delimiters ++= List("(", ")", "\\", ".", ":", "=", "->", "{", "}", ",", "*")
+    lexical.delimiters ++= List("(", ")", "\\", ".", ":", "=", "->", "{", "}",
+        ",", "*", "=>", "|", "+")
     lexical.reserved ++= List("Bool", "Nat", "true", "false", "if", "then", "else", "succ",
-        "pred", "iszero", "let", "in", "fst", "snd")
+        "pred", "iszero", "let", "in", "fst", "snd", "inl", "inr", "as", "case",
+        "of")
 
     /**
       * Term     ::= SimpleTerm { SimpleTerm }
@@ -52,9 +54,7 @@ object SimplyTyped extends StandardTokenParsers {
             | ("if" ~> Term) ~ ("then" ~> Term) ~ ("else" ~> Term) ^^ {
                 case cond ~ thn ~ els => If(cond, thn, els)
             }
-            | ident ^^ {
-                case ident => Variable(ident)
-            }
+            | ident ^^ Variable
             | ("\\" ~> ident) ~ (":" ~> Type) ~ ("." ~> Term) ^^ {
                 case param ~ typ ~ body => Abstraction(Variable(param), typ, body)
             }
@@ -68,6 +68,17 @@ object SimplyTyped extends StandardTokenParsers {
             }
             | "fst" ~> Term ^^ Fst
             | "snd" ~> Term ^^ Snd
+            | ("inl" ~> Term) ~ ("as" ~> Type) ^^ {
+                case term ~ typ => InjectLeft(term, typ)
+            }
+            | ("inr" ~> Term) ~ ("as" ~> Type) ^^ {
+                case term ~ typ => InjectRight(term, typ)
+            }
+            | ("case" ~> Term) ~ ("of" ~> "inl" ~> ident) ~ ("=>" ~> Term) ~
+            ("|" ~> "inr" ~> ident) ~ ("=>" ~> Term) ^^ {
+                case elem ~ lVar ~ lTerm ~ rVar ~ rTerm =>
+                    Case(elem, Variable(lVar), lTerm, Variable(rVar), rTerm)
+            }
             | failure("illegal start of simple term"))
 
     /**
@@ -82,11 +93,12 @@ object SimplyTyped extends StandardTokenParsers {
             | failure("illegal start of type"))
 
     /**
-      * TupleType       ::= SimpleType [ "*" TupleType ]
+      * TupleType       ::= SimpleType [ ("*" | "+") TupleType ]
       */
     def TupleType: Parser[Type] = positioned(
-        SimpleType ~ opt("*" ~> TupleType) ^^ {
-            case fst ~ Some(snd) => TypePair(fst, snd)
+        SimpleType ~ opt(("*" | "+") ~ TupleType) ^^ {
+            case fst ~ Some("*" ~ snd) => TypePair(fst, snd)
+            case left ~ Some("+" ~ right) => TypeSum(left, right)
             case typ ~ None => typ
         }
             | failure("illegal start of type"))
