@@ -36,4 +36,21 @@ class TestTyper extends FunSuite with Matchers with LambdaTest {
     typeError("fst 0")
     typeError("snd true")
     typeError("x")
+
+    val simpleSumTyped = Seq(
+        // Injections left
+        "inl 0 as Nat+Bool",
+        "inl if iszero 0 then 0 else succ 0 as Nat+Bool",
+        "inl succ succ succ succ 0 as Nat+Bool", "inl snd {true, 0} as Nat+Bool",
+        "let x: Nat+Bool = inl 6 as Nat+Bool in x",
+        // Injections right
+        "inr true as Nat+Bool",
+        "inr if iszero 0 then true else false as Nat+Bool",
+        "inr iszero 1 as Nat+Bool", "inr fst {true, 0} as Nat+Bool",
+        "let x: Nat+Bool = inr false as Nat+Bool in x")
+    simpleSumTyped.foreach(expectedType(_, "Nat+Bool"))
+
+    val moreComplexSumTyped = Seq("inl inr iszero 6 as (Nat*Bool)+Bool as ((Nat*Bool)+Bool)+(Bool*Bool)",
+        "inl inl {succ 0, iszero fst {6, 3}} as (Nat*Bool)+Bool as ((Nat*Bool)+Bool)+(Bool*Bool)")
+    moreComplexSumTyped.foreach(expectedType(_, "((Nat*Bool)+Bool)+(Bool*Bool)"))
 }
