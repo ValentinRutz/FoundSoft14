@@ -218,10 +218,10 @@ object SimplyTyped extends StandardTokenParsers {
       * position of the term, the expected type and the type that was found
       *
       */
-    def expect(t: Term, expected: Type, finalType: Type,
+    def expect(t: Term, expected: Type,
                error: (Position, Type, Type) => TypeError)(implicit ctx: Context) = {
         val found = typeof(t)
-        if (found == expected) finalType else throw error(t.pos, expected, found)
+        if (found == expected) expected else throw error(t.pos, expected, found)
     }
 
     /**
@@ -242,25 +242,26 @@ object SimplyTyped extends StandardTokenParsers {
 
         /* T-PRED */
         case Pred(subterm) =>
-            expect(subterm, TypeNat(), TypeNat(), new ErrorParamType(_, _, _))
+            expect(subterm, TypeNat(), new ErrorParamType(_, _, _))
 
         /* T-SUCC */
         case Succ(subterm) =>
-            expect(subterm, TypeNat(), TypeNat(), new ErrorParamType(_, _, _))
+            expect(subterm, TypeNat(), new ErrorParamType(_, _, _))
 
         /* T- ISZERO */
         case IsZero(subterm) =>
-            expect(subterm, TypeNat(), TypeBool(), new ErrorParamType(_, _, _))
+            expect(subterm, TypeNat(), new ErrorParamType(_, _, _))
+            TypeBool()
 
         /* T-IF */
         case If(cond, thenn, els) =>
-            expect(cond, TypeBool(), TypeBool(),
+            expect(cond, TypeBool(),
                 (pos, expected, found) =>
                     TypeError(pos, s"Condition should be a boolean. " +
                         "Found $found"))
 
             val typeThen = typeof(thenn)
-            expect(els, typeThen, typeThen,
+            expect(els, typeThen,
                 (pos, expected, found) =>
                     TypeError(pos, s"then and else part should have the same type. " +
                         "Found: then=$expected != else=$found"))
@@ -285,7 +286,8 @@ object SimplyTyped extends StandardTokenParsers {
                     throw TypeError(t1.pos, s"left term should be an abstraction")
             }
 
-            expect(t2, from, to, new ErrorParamType(_, _, _))
+            expect(t2, from, new ErrorParamType(_, _, _))
+            to
 
         case Pair(fst, snd) =>
             TypePair(typeof(fst), typeof(snd))
@@ -304,11 +306,13 @@ object SimplyTyped extends StandardTokenParsers {
 
         /* T-INL */
         case InjectLeft(elem, typ @ TypeSum(left, _)) =>
-            expect(elem, left, typ, new ErrorParamType(_, _, _))
+            expect(elem, left, new ErrorParamType(_, _, _))
+            typ
 
         /* T-INR */
         case InjectRight(elem, typ @ TypeSum(_, right)) =>
-            expect(elem, right, typ, new ErrorParamType(_, _, _))
+            expect(elem, right, new ErrorParamType(_, _, _))
+            typ
 
         /* T-CASE */
         case Case(elem, lVal, lTerm, rVal, rTerm) => typeof(elem) match {
