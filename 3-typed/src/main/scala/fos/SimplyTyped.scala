@@ -13,7 +13,7 @@ object SimplyTyped extends StandardTokenParsers {
         ",", "*", "=>", "|", "+")
     lexical.reserved ++= List("Bool", "Nat", "true", "false", "if", "then", "else", "succ",
         "pred", "iszero", "let", "in", "fst", "snd", "inl", "inr", "as", "case",
-        "of")
+        "of", "fix", "letrec")
 
     /**
       * Term     ::= SimpleTerm { SimpleTerm }
@@ -41,6 +41,7 @@ object SimplyTyped extends StandardTokenParsers {
       *     | "inl" Term "as" Type
       *     | "inr" Term "as" Type
       *     | "case" Term "of" "inl" ident "=>" Term "|" "inr" ident "=>" Term
+      *     | "fix" Term
       */
     def SimpleTerm: Parser[Term] = positioned(
         "true" ^^^ True()
@@ -78,6 +79,14 @@ object SimplyTyped extends StandardTokenParsers {
             ("|" ~> "inr" ~> ident) ~ ("=>" ~> Term) ^^ {
                 case elem ~ lVar ~ lTerm ~ rVar ~ rTerm =>
                     Case(elem, Variable(lVar), lTerm, Variable(rVar), rTerm)
+            }
+            | "fix" ~> Term ^^ Fix
+            | ("letrec" ~> ident) ~ (":" ~> Type) ~
+            ("=" ~> Term) ~ ("in" ~> Term) ^^ {
+                case x ~ typ ~ t1 ~ t2 =>
+                    val param = Variable(x)
+                    val expr = Fix(Abstraction(param, typ, t1))
+                    Application(Abstraction(param, typ, t2), expr)
             }
             | failure("illegal start of simple term"))
 
