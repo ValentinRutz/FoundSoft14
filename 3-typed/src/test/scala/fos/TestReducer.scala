@@ -58,6 +58,10 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
         "case inr 0 as Bool+Nat of inl l => pred 0 | inr r => pred succ 0" shouldReduceTo "pred succ 0"
     }
 
+    test("fix \\x: Nat. x") {
+        "fix \\x: Nat. x" shouldReduceTo "fix \\x: Nat. x"
+    }
+
     // CONGRUENCE
 
     test("if term") {
@@ -128,6 +132,11 @@ class TestReducer extends FunSuite with Matchers with LambdaTest {
 
     test("inr term") {
         "inr pred 0 as Nat+Nat" shouldReduceTo "inr 0 as Nat+Nat"
+    }
+
+    test("fix term") {
+        "fix (\\x: Nat.\\y:Nat. y) 0" shouldReduceTo "fix \\y: Nat.y"
+        "fix pred 0" shouldReduceTo "fix 0"
     }
 
     // SUBSTITUTION
