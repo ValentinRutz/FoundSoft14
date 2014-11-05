@@ -281,6 +281,26 @@ object SimplyTyped extends StandardTokenParsers {
                 throw TypeError(pair.pos, s"pair type expected but $err found")
         }
 
+        /* T-INL */
+        case InjectLeft(elem, typ @ TypeSum(left, _)) =>
+            expect(elem, left, typ, new ErrorParamType(_, _, _))
+
+        /* T-INR */
+        case InjectRight(elem, typ @ TypeSum(_, right)) =>
+            expect(elem, right, typ, new ErrorParamType(_, _, _))
+
+        /* T-CASE */
+        case Case(elem, lVal, lTerm, rVal, rTerm) => typeof(elem) match {
+            case TypeSum(typeL, typeR) => {
+                val finalTypeL = typeof(lTerm)((lVal.name, typeL) :: ctx)
+                val finalTypeR = typeof(rTerm)((lVal.name, typeR) :: ctx)
+                if (finalTypeL == finalTypeR) finalTypeL
+                else throw TypeError(rTerm.pos, s"type mismatch : $finalTypeL expected but $finalTypeR found")
+            }
+            case err =>
+                throw TypeError(elem.pos, s"sum type expected but $err found")
+        }
+
         case x => throw new AssertionError(s"No rule to type term $x")
 
     }
