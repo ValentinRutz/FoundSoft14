@@ -158,6 +158,17 @@ object NumericValue {
         case _ => false
     }
 
+    def getValue(t: Term) = {
+        assume(isNumericValue(t))
+
+        @tailrec def getValueRec(t: Term, accu: Int = 0): Int = t match {
+            case Zero() => accu
+            case Succ(pred) => getValueRec(pred, accu + 1)
+        }
+
+        getValueRec(t)
+    }
+
     def unapply(t: Term): Option[Term] = if (isNumericValue(t)) Some(t) else None
 }
 
