@@ -11,7 +11,7 @@ object ExerciseBuild extends Build {
 
   val exerciseSettings = Defaults.defaultSettings ++ Seq(
     organization := "fos",
-    name         := "fos-project3",
+    name         := "fos-project5",
     version      := "1.0",
     scalaVersion := "2.10.4",
     resolvers ++= Seq("Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"),
@@ -19,8 +19,7 @@ object ExerciseBuild extends Build {
     libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
     libraryDependencies ++= Seq("org.scalacheck" %% "scalacheck" % "1.11.5" % "test"))
 
-
-  val filesToInclude = Seq("src/main/scala/fos/SimplyTyped.scala", "src/main/scala/fos/Terms.scala")
+  val filesToInclude = Seq("Infer", "Terms", "TwoPhaseInferencer", "TypeInferencers",  "Types").map("src/main/scala/fos/" + _ + ".scala")
 
   val packageToMoodle = InputKey[Unit]("package-for-submission", "Package all files necessary for submission, given your surnames. For example 'Plociniczak Jovanovic'")
 
@@ -38,11 +37,12 @@ object ExerciseBuild extends Build {
     }
   }
 
-  lazy val root = Project("fos-project3", file("."))
+  lazy val root = Project("fos-project5", file("."))
   .settings( (exerciseSettings 
                 ++ Seq(packageToMoodleTask) 
                 ++ scalariformConfig
                 ++ scoverageSettings) : _*)
+
 
   private def gatherSources(out: File, po: Seq[PackageOption], cacheDir: File, log: Logger): File = {
     val packagePrefix = "src/fos"
