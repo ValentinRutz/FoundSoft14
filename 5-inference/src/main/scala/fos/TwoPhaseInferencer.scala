@@ -19,7 +19,7 @@ class TwoPhaseInferencer extends TypeInferencers {
             if (t1 == null)
                 throw TypeError("Unknown variable " + x)
             TypingResult(t1.instantiate, noConstraints)
-        //   ... To complete ... 
+        //   ... To complete ...
     }
 
     /**
