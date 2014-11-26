@@ -15,6 +15,7 @@ case class TypeVar(name: String) extends Type
 case class TypeFun(argTyp: Type, bodyTyp: Type) extends Type
 object TypeNat extends Type
 object TypeBool extends Type
+object TypeEmpty extends Type
 //   ... To complete ... 
 
 /** Type Schemes are not types. */
@@ -59,8 +60,9 @@ object Type {
     private var counter = 0
 }
 
-abstract class Substitution extends (Type => Type) {
+abstract class Substitution extends (Type => Type) { self =>
 
+    def lookup(t: TypeVar): Option[Type]
     var indent = 0
 
     //   ... To complete ... 
@@ -68,7 +70,9 @@ abstract class Substitution extends (Type => Type) {
         //println("  " * indent + "in: " + tp + "   subst: " + this)
         indent = indent + 1
         val result = tp match {
-            case _ => ??? //   ... To complete ... 
+            case TypeBool | TypeNat => tp
+            case TypeFun(from, to) => TypeFun(this(from), this(to))
+            case tv @ TypeVar(_) => lookup(tv) getOrElse tv
         }
         indent = indent - 1
         //println("  " * indent + "out: " + result + "   subst: " + this)
@@ -81,12 +85,34 @@ abstract class Substitution extends (Type => Type) {
     }
 
     def apply(env: List[(String, TypeScheme)]): List[(String, TypeScheme)] =
-        env map { (pair) => (pair._1, TypeScheme(pair._2.args, apply(pair._2.tp))) }
+        env map { (pair) =>
+            (pair._1, TypeScheme(pair._2.args, apply(pair._2.tp)))
+        }
+
+    /*
+       * priority to rhs of composition
+       * first try to substitute with rhs, then lhs
+       */
+    def compose(that: Substitution): Substitution = new Substitution {
+        def lookup(t: TypeVar) = that.lookup(t) match {
+            case None => self.lookup(t)
+            case some => some
+        }
+    }
+
+    def composeWithPair(that: (Type, Type)): Substitution =
+        compose(new SingletonSubst(that._1, that._2))
+
+    def o(that: (Type, Type)): Substitution = composeWithPair(that)
 
     //   ... To complete ... 
 }
 
+class SingletonSubst(from: Type, to: Type) extends Substitution {
+    def lookup(t: TypeVar) = if (t == from) Some(to) else None
+}
+
 /** The empty substitution. */
 object emptySubst extends Substitution {
-    def lookup(t: TypeVar) = t
+    def lookup(t: TypeVar) = None
 }
