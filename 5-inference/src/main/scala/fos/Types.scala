@@ -37,7 +37,19 @@ case class TypeScheme(args: List[TypeVar], tp: Type) {
 object Type {
     //   ... To complete ... 
     type Env = List[(String, TypeScheme)]
-    def generalize(env: Env, typ: Type): TypeScheme = ???
+    def generalize(env: Env, typ: Type): TypeScheme =
+        TypeScheme(collectTypeVar(typ) filterNot (collectTypeVar(env).contains(_)),
+            typ)
+
+    def collectTypeVar(env: Env): List[TypeVar] = env flatMap { e =>
+        collectTypeVar(e._2.tp)
+    }
+
+    def collectTypeVar(typ: Type): List[TypeVar] = typ match {
+        case tv @ TypeVar(_) => List(tv)
+        case TypeFun(t1, t2) => collectTypeVar(t1) ++ collectTypeVar(t2)
+        case TypeNat | TypeBool => Nil
+    }
 
     def freshTypeVar: Type = TypeVar(freshName)
     def freshName: String = {
