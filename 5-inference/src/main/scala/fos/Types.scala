@@ -25,6 +25,7 @@ case class TypeScheme(args: List[TypeVar], tp: Type) {
      * TypeScheme. This is done by putting as TypeVar (?) all Types That are not
      * bound by the environment
      * -> def generalize(env: Env, typ: Type): TypeScheme
+     * generalize implemented in Type object
      */
     //   ... To complete ... 
     override def toString() = args.mkString("[", ", ", "].") + tp
