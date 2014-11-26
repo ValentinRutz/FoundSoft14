@@ -40,7 +40,11 @@ object Type {
     def generalize(env: Env, typ: Type): TypeScheme = ???
 
     def freshTypeVar: Type = TypeVar(freshName)
-    def freshName: String = ???
+    def freshName: String = {
+        counter = counter + 1
+        "x$" + counter
+    }
+    private var counter = 0
 }
 
 abstract class Substitution extends (Type => Type) {
