@@ -64,15 +64,23 @@ class TwoPhaseInferencer extends TypeInferencers {
 
     /**
       */
-    def unify(c: List[Constraint]): Substitution =
-        if (c.isEmpty) emptySubst
-        else c.head match {
+    def unify(constraints: List[Constraint]): Substitution = constraints match {
+        case Nil => emptySubst
+        case c :: cs => c match {
             case (TypeVar(a), TypeVar(b)) if (a == b) =>
-                unify(c.tail)
-            //   ... To complete ... 
+                unify(cs)
+            case (t1 @ TypeVar(a), t2) if (collectTypeVar(t2).contains(t1)) =>
+                val subst = SingletonSubst(t1, t2)
+                unify(cs map { subst(_) }) + subst
+            case (t1, t2 @ TypeVar(b)) if (collectTypeVar(t1).contains(t2)) =>
+                val subst = SingletonSubst(t2, t1)
+                unify(cs map { subst(_) }) + subst
+            case (TypeFun(t11, t12), TypeFun(t21, t22)) =>
+                unify((t11, t21) :: (t12, t22) :: cs)
             case (t1, t2) =>
                 throw TypeError("Could not unify: " + t1 + " with " + t2)
         }
+    }
 
     override def typeOf(t: Term): Type = try {
         val TypingResult(tp, c) = collect(Nil: Env, t)

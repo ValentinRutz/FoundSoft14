@@ -59,6 +59,7 @@ object Type {
         "x$" + counter
     }
     private var counter = 0
+
 }
 
 abstract class Substitution extends (Type => Type) { self =>
@@ -102,14 +103,15 @@ abstract class Substitution extends (Type => Type) { self =>
     }
 
     def composeWithPair(that: (Type, Type)): Substitution =
-        compose(new SingletonSubst(that._1, that._2))
+        compose(SingletonSubst(that._1, that._2))
 
-    def o(that: (Type, Type)): Substitution = composeWithPair(that)
+    def +(that: (Type, Type)): Substitution = composeWithPair(that)
+    def +(that: Substitution): Substitution = compose(that)
 
     //   ... To complete ... 
 }
 
-class SingletonSubst(from: Type, to: Type) extends Substitution {
+case class SingletonSubst(from: Type, to: Type) extends Substitution {
     def lookup(t: TypeVar) = if (t == from) Some(to) else None
 }
 
