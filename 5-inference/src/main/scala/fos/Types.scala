@@ -36,6 +36,11 @@ case class TypeScheme(args: List[TypeVar], tp: Type) {
 
 object Type {
     //   ... To complete ... 
+    type Env = List[(String, TypeScheme)]
+    def generalize(env: Env, typ: Type): TypeScheme = ???
+
+    def freshTypeVar: Type = TypeVar(freshName)
+    def freshName: String = ???
 }
 
 abstract class Substitution extends (Type => Type) {
