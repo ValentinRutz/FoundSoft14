@@ -101,16 +101,14 @@ abstract class Substitution extends (Type => Type) { self =>
         }
     }
 
-    def composeWithPair(that: (Type, Type)): Substitution =
-        compose(SingletonSubst(that._1, that._2))
-
-    def +(that: (Type, Type)): Substitution = composeWithPair(that)
+    def +(that: (Type, Type)): Substitution =
+        this + (new SingletonSubst(that._1, that._2))
     def +(that: Substitution): Substitution = compose(that)
 
     //   ... To complete ... 
 }
 
-case class SingletonSubst(from: Type, to: Type) extends Substitution {
+class SingletonSubst(from: Type, to: Type) extends Substitution {
     def lookup(t: TypeVar) = if (t == from) Some(to) else None
 }
 
