@@ -62,7 +62,14 @@ class TwoPhaseInferencer extends TypeInferencers {
             TypingResult(resultType,
                 (t1Type, TypeFun(t2Type, resultType)) :: t1Cons ::: t2Cons)
         }
-        case Let(x, v, t) => ???
+        case Let(x, v, t) => {
+            val TypingResult(typeS, constC) = collect(env, v)
+            val subst = unify(constC)
+            val typeT = subst(typeS)
+            val newEnv = subst(env)
+            val schemeT = generalize(newEnv, typeT)
+            collect((x, schemeT) :: newEnv, t)
+        }
     }
 
     /**
