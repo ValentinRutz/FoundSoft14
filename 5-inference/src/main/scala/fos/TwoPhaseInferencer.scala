@@ -49,8 +49,8 @@ class TwoPhaseInferencer extends TypeInferencers {
             }
 
             // maybe not generalize but 
-            //val tScheme = TypeScheme(Nil, tArg)
-            val tScheme = generalize(env, tArg)
+            val tScheme = TypeScheme(Nil, tArg)
+            //val tScheme = generalize(env, tArg)
             val TypingResult(tRet, constraints) = collect((v, tScheme) :: env, t)
             // Use tArg or tScheme.instantiate ?
             TypingResult(TypeFun(tArg, tRet), constraints)
