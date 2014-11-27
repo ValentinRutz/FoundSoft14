@@ -19,6 +19,7 @@ object TypeBool extends Type
 
 /** Type Schemes are not types. */
 case class TypeScheme(args: List[TypeVar], tp: Type) {
+    //import Type._
     /*
      * To be put in the environment, every Type has to be generalized to a
      * TypeScheme. This is done by putting as TypeVar (?) all Types That are not
@@ -32,7 +33,8 @@ case class TypeScheme(args: List[TypeVar], tp: Type) {
     /*
      * TODO
      */
-    def instantiate: Type = ???
+    def instantiate: Type =
+        args.foldLeft[Substitution](emptySubst) { _ + (_, Type.freshTypeVar) }(tp)
 }
 
 object Type {
