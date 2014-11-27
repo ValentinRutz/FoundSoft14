@@ -15,7 +15,6 @@ case class TypeVar(name: String) extends Type
 case class TypeFun(argTyp: Type, bodyTyp: Type) extends Type
 object TypeNat extends Type
 object TypeBool extends Type
-object TypeEmpty extends Type
 //   ... To complete ... 
 
 /** Type Schemes are not types. */
@@ -31,7 +30,7 @@ case class TypeScheme(args: List[TypeVar], tp: Type) {
     override def toString() = args.mkString("[", ", ", "].") + tp
 
     /*
-     * 
+     * TODO
      */
     def instantiate: Type = ???
 }
