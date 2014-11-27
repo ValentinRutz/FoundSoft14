@@ -79,6 +79,8 @@ class TwoPhaseInferencer extends TypeInferencers {
         case c :: cs => c match {
             case (TypeVar(a), TypeVar(b)) if (a == b) =>
                 unify(cs)
+            case (TypeBool, TypeBool) | (TypeNat, TypeNat) =>
+                unify(cs)
             case (t1 @ TypeVar(a), t2) if (!collectTypeVar(t2).contains(t1)) =>
                 val subst = emptySubst + (t1, t2)
                 unify(cs map { subst(_) }) + subst
