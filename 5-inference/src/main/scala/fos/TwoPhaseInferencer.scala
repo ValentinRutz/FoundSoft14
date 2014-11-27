@@ -60,6 +60,7 @@ class TwoPhaseInferencer extends TypeInferencers {
             TypingResult(resultType,
                 (t1Type, TypeFun(t2Type, resultType)) :: t1Cons ::: t2Cons)
         }
+        case Let(x, v, t) => ???
     }
 
     /**
