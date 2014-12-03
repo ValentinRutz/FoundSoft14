@@ -10,7 +10,11 @@ class Typer extends TestSuite {
         """\x. (\y. succ y) x""" -> "Nat->Nat",
         """(\z.(\y.\x.if x then x else x)) true succ 0""" -> "Bool->Bool",
         """\x.\y. ((\a. (\b. succ b)) if true then x else y) y""" -> "Nat->Nat->Nat",
-        """\b. (let x = succ b in (\y. 0)) true""" -> "Nat->Nat")
+        """\b. (let x = succ b in (\y. 0)) true""" -> "Nat->Nat",
+        """let double = \f.\x.f(f(x)) in 
+            if (double (\x:Bool. if x then false else true) false) 
+                then double (\x:Nat.succ x) 0 
+                else 0""" -> "Nat")
 
     for ((term, tpe) <- terms) {
         testTypeOf(term, tpe)
