@@ -71,7 +71,7 @@ abstract class Substitution extends (Type => Type) { self =>
         val result = tp match {
             case TypeBool | TypeNat => tp
             case TypeFun(from, to) => TypeFun(this(from), this(to))
-            case tv @ TypeVar(_) => lookup(tv) getOrElse tv
+            case tv @ TypeVar(_) => lookup(tv) map apply getOrElse tv
         }
         indent = indent - 1
         //println("  " * indent + "out: " + result + "   subst: " + this)
