@@ -80,7 +80,7 @@ abstract class Substitution extends (Type => Type) { self =>
     override def toString() = ""
 
     def apply(p: (Type, Type)): (Type, Type) = p match {
-        case Pair(t1, t2) => (this(t1), this(t2))
+        case (t1, t2) => (this(t1), this(t2))
     }
 
     def apply(env: List[(String, TypeScheme)]): List[(String, TypeScheme)] =
@@ -93,10 +93,7 @@ abstract class Substitution extends (Type => Type) { self =>
        * first try to substitute with rhs, then lhs
        */
     def compose(that: Substitution): Substitution = new Substitution {
-        def lookup(t: TypeVar) = that.lookup(t) match {
-            case None => self.lookup(t)
-            case some => some
-        }
+        def lookup(t: TypeVar) = that.lookup(t) orElse self.lookup(t)
     }
 
     def +(that: (Type, Type)): Substitution =
