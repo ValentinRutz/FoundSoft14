@@ -92,6 +92,21 @@ trait TestSuite extends FunSuite with Matchers {
 
     def testTypeOf(in: Term, tpe: String): Unit = testTypeOf(in, parse(Infer.Type)(tpe))
 
+    /**
+      * Tests that a given term does not type checks
+      */
+    def testBadType(in: Term) =
+        test(s"$in should not typecheck") {
+            (try {
+                val infer = new TwoPhaseInferencer()
+                val infer.TypingResult(tp, c) = infer.collect(Nil, in)
+                val s = infer.unify(c)
+                "error not catched"
+            } catch {
+                case tperror: Exception => "error catched"
+            }) should equal("error catched")
+        }
+
     def testCollectConstraints(in: Term, constTest: (Type, Type)*): Unit = {
         test(s"collect($in) should return constraints $constTest") {
             val inferencer = new TwoPhaseInferencer()
