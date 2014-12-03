@@ -75,17 +75,17 @@ class TwoPhaseInferencer extends TypeInferencers {
     /**
       */
     def unify(constraints: List[Constraint]): Substitution = constraints match {
-        case Nil => emptySubst
+        case Nil => EmptySubst
         case c :: cs => c match {
             case (TypeVar(a), TypeVar(b)) if (a == b) =>
                 unify(cs)
             case (TypeBool, TypeBool) | (TypeNat, TypeNat) =>
                 unify(cs)
             case (t1 @ TypeVar(a), t2) if (!collectTypeVar(t2).contains(t1)) =>
-                val subst = emptySubst + (t1, t2)
+                val subst = EmptySubst + (t1, t2)
                 unify(cs map { subst(_) }) + subst
             case (t1, t2 @ TypeVar(b)) if (!collectTypeVar(t1).contains(t2)) =>
-                val subst = emptySubst + (t2, t1)
+                val subst = EmptySubst + (t2, t1)
                 unify(cs map { subst(_) }) + subst
             case (TypeFun(t11, t12), TypeFun(t21, t22)) =>
                 unify((t11, t21) :: (t12, t22) :: cs)

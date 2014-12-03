@@ -30,7 +30,7 @@ case class TypeScheme(args: List[TypeVar], tp: Type) {
     override def toString() = args.mkString("[", ", ", "].") + tp
 
     def instantiate: Type =
-        args.foldLeft[Substitution](emptySubst) { _ + (_, Type.freshTypeVar) }(tp)
+        args.foldLeft[Substitution](EmptySubst) { _ + (_, Type.freshTypeVar) }(tp)
 }
 
 object Type {
@@ -71,7 +71,7 @@ abstract class Substitution extends (Type => Type) { self =>
         val result = tp match {
             case TypeBool | TypeNat => tp
             case TypeFun(from, to) => TypeFun(this(from), this(to))
-            case tv @ TypeVar(_) => lookup(tv) getOrElse tv
+            case tv @ TypeVar(_) => lookup(tv) map apply getOrElse tv
         }
         indent = indent - 1
         //println("  " * indent + "out: " + result + "   subst: " + this)
@@ -111,6 +111,7 @@ class SingletonSubst(from: Type, to: Type) extends Substitution {
 }
 
 /** The empty substitution. */
-object emptySubst extends Substitution {
+object EmptySubst extends Substitution {
+    override def toString = ""
     def lookup(t: TypeVar) = None
 }
