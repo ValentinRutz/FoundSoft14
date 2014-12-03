@@ -30,7 +30,7 @@ case class TypeScheme(args: List[TypeVar], tp: Type) {
     override def toString() = args.mkString("[", ", ", "].") + tp
 
     def instantiate: Type =
-        args.foldLeft[Substitution](emptySubst) { _ + (_, Type.freshTypeVar) }(tp)
+        args.foldLeft[Substitution](EmptySubst) { _ + (_, Type.freshTypeVar) }(tp)
 }
 
 object Type {
@@ -111,6 +111,7 @@ class SingletonSubst(from: Type, to: Type) extends Substitution {
 }
 
 /** The empty substitution. */
-object emptySubst extends Substitution {
+object EmptySubst extends Substitution {
+    override def toString = ""
     def lookup(t: TypeVar) = None
 }
