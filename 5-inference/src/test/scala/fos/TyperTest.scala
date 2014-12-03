@@ -19,7 +19,11 @@ class Typer extends TestSuite {
         """let triple = \f.\x.f(f(f(x))) in let double = \f.\x.f(f(x)) in
             if (triple (\x:Bool. if x then false else true) false) then
                 triple (\x:Nat. succ x) 0
-                else 0""" -> "Nat")
+                else 0""" -> "Nat",
+        """let a = \x.x in
+                let b = \x. \y. x in
+                    let c = true in
+                        a b c succ 0""" -> "Bool")
 
     for ((term, tpe) <- terms) {
         testTypeOf(term, tpe)
@@ -29,7 +33,8 @@ class Typer extends TestSuite {
         """succ true""",
         """let f= \g.g in if f true then f 0 else f f true""",
         """if true then 0 else false""",
-        """let dummy = f in dummy""")
+        """let dummy = f in dummy""",
+        """let dummy = 4 in let f = 45 in d""")
 
     for (t <- badTerms) testBadType(t)
 }
