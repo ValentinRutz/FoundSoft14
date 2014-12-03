@@ -14,6 +14,11 @@ class Typer extends TestSuite {
         """let double = \f.\x.f(f(x)) in 
             if (double (\x:Bool. if x then false else true) false) 
                 then double (\x:Nat.succ x) 0 
+                else 0""" -> "Nat",
+        """let f= \x.x in let g = f in if g true then f 0 else f f 0""" -> "Nat",
+        """let triple = \f.\x.f(f(f(x))) in let double = \f.\x.f(f(x)) in
+            if (triple (\x:Bool. if x then false else true) false) then
+                triple (\x:Nat. succ x) 0
                 else 0""" -> "Nat")
 
     for ((term, tpe) <- terms) {
@@ -21,7 +26,10 @@ class Typer extends TestSuite {
     }
 
     val badTerms = List(
-        """succ true""")
+        """succ true""",
+        """let f= \g.g in if f true then f 0 else f f true""",
+        """if true then 0 else false""",
+        """let dummy = f in dummy""")
 
     for (t <- badTerms) testBadType(t)
 }
