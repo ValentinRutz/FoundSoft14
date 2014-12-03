@@ -91,4 +91,13 @@ trait TestSuite extends FunSuite with Matchers {
     }
 
     def testTypeOf(in: Term, tpe: String): Unit = testTypeOf(in, parse(Infer.Type)(tpe))
+
+    def testCollectConstraints(in: Term, constTest: (Type, Type)*): Unit = {
+        test(s"collect($in) should return constraints $constTest") {
+            val inferencer = new TwoPhaseInferencer()
+            val constResult = inferencer.collect(Nil, in).c
+            constResult diff constTest should equal(Seq())
+            constTest diff constResult should equal(Seq())
+        }
+    }
 }
