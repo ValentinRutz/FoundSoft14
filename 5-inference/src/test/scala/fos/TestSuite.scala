@@ -4,10 +4,13 @@ import fos.Infer._
 import org.scalatest.{ Matchers, FunSuite }
 import scala.language.implicitConversions
 
-trait TestSuite extends FunSuite with Matchers {
+trait TestSuite extends FunSuite with Matchers with Magic {
 
     implicit def s2term(s: String): Term =
         parseOpt(Infer.Term)(s) getOrElse parse(Infer.Type)(s)
+
+    def testNoOut[T](title: String)(thunk: => T) =
+        test(title)(noSillyOutput(thunk))
 
     /** Return Some(term) on success or None if the parsing failed */
     def parseOpt[T <: Term](parser: Parser[T])(in: String): Option[T] = {
@@ -81,8 +84,8 @@ trait TestSuite extends FunSuite with Matchers {
     /**
       * Tests that a term is correctly typed
       */
-    def testTypeOf(in: Term, tpe: TypeTree) = {
-        test(s"$in should typecheck to $tpe") {
+    def testTypeOf(in: Term, tpe: TypeTree) = noSillyOutput {
+        testNoOut(s"$in should typecheck to $tpe") {
             val inferencer = new TwoPhaseInferencer()
             val inferred = inferencer.typeOf(in)
             val expected = inferencer.toType(tpe)
@@ -92,12 +95,11 @@ trait TestSuite extends FunSuite with Matchers {
 
     def testTypeOf(in: Term, tpe: String): Unit = testTypeOf(in, parse(Infer.Type)(tpe))
 
-    def testCollectConstraints(in: Term, constTest: (Type, Type)*): Unit = {
-        test(s"collect($in) should return constraints $constTest") {
+    def testCollectConstraints(in: Term, constTest: (Type, Type)*): Unit =
+        testNoOut(s"collect($in) should return constraints $constTest") {
             val inferencer = new TwoPhaseInferencer()
             val constResult = inferencer.collect(Nil, in).c
             constResult diff constTest should equal(Seq())
             constTest diff constResult should equal(Seq())
         }
-    }
 }
