@@ -100,14 +100,12 @@ trait TestSuite extends FunSuite with Matchers with Magic {
       */
     def testBadType(in: Term) =
         test(s"$in should not typecheck") {
-            (try {
-                val infer = new TwoPhaseInferencer()
+            val infer = new TwoPhaseInferencer()
+
+            val thrown = an[infer.TypeError] should be thrownBy {
                 val infer.TypingResult(tp, c) = infer.collect(Nil, in)
-                val s = infer.unify(c)
-                "error not catched"
-            } catch {
-                case tperror: Exception => "error catched"
-            }) should equal("error catched")
+                infer.unify(c)
+            }
         }
 
     def testCollectConstraints(in: Term, constTest: (Type, Type)*): Unit =
