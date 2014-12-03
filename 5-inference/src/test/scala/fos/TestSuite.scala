@@ -1,9 +1,15 @@
+package fos
+
 import fos.Infer._
-import fos._
 import org.scalatest.{ Matchers, FunSuite }
+import scala.language.implicitConversions
 
 trait TestSuite extends FunSuite with Matchers {
 
+    implicit def s2term(s: String): Term =
+        parseOpt(Infer.Term)(s) getOrElse parse(Infer.Type)(s)
+
+    /** Return Some(term) on success or None if the parsing failed */
     def parseOpt[T <: Term](parser: Parser[T])(in: String): Option[T] = {
         val tokens = new lexical.Scanner(in)
         phrase(parser)(tokens) match {
@@ -13,6 +19,7 @@ trait TestSuite extends FunSuite with Matchers {
         }
     }
 
+    /** Return directly the element on successful parsing or fail the test */
     def parse[T <: Term](parser: Parser[T])(in: String): T = {
         val tokens = new lexical.Scanner(in)
         phrase(parser)(tokens) match {
@@ -70,4 +77,18 @@ trait TestSuite extends FunSuite with Matchers {
             term.toString should equal(in)
         }
     }
+
+    /**
+      * Tests that a term is correctly typed
+      */
+    def testTypeOf(in: Term, tpe: TypeTree) = {
+        test(s"$in should typecheck to $tpe") {
+            val inferencer = new TwoPhaseInferencer()
+            val inferred = inferencer.typeOf(in)
+            val expected = inferencer.toType(tpe)
+            inferred should equal(expected)
+        }
+    }
+
+    def testTypeOf(in: Term, tpe: String): Unit = testTypeOf(in, parse(Infer.Type)(tpe))
 }
