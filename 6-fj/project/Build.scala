@@ -2,6 +2,10 @@ import sbt._
 import Keys._
 
 import java.io.File
+import com.typesafe.sbt.SbtScalariform
+import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+import scalariform.formatter.preferences._
+import scoverage.ScoverageSbtPlugin._
 
 object ExerciseBuild extends Build {
 
@@ -10,7 +14,10 @@ object ExerciseBuild extends Build {
     name         := "fos-project6",
     version      := "1.0",
     scalaVersion := "2.10.4",
-    scalacOptions ++= List("-unchecked", "-deprecation"))
+    resolvers ++= Seq("Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"),
+    scalacOptions ++= List("-unchecked", "-deprecation", "-feature"),
+    libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
+    libraryDependencies ++= Seq("org.scalacheck" %% "scalacheck" % "1.11.5" % "test"))
 
   val filesToInclude = Seq("FJ", "Tree", "Type").map("src/main/scala/fos/" + _ + ".scala")
 
@@ -30,7 +37,11 @@ object ExerciseBuild extends Build {
     }
   }
 
-  lazy val root = Project("fos-project6", file(".")).settings((exerciseSettings ++ Seq(packageToMoodleTask)):_*)
+  lazy val root = Project("fos-project6", file("."))
+  .settings( (exerciseSettings 
+                ++ Seq(packageToMoodleTask) 
+                ++ scalariformConfig
+                ++ scoverageSettings) : _*)
 
 
   private def gatherSources(out: File, po: Seq[PackageOption], cacheDir: File, log: Logger): File = {
@@ -58,6 +69,30 @@ object ExerciseBuild extends Build {
 
   }
 
+  def scalariformConfig = SbtScalariform.scalariformSettings ++ Seq(
+    ScalariformKeys.preferences := FormattingPreferences()
+        .setPreference(AlignParameters, true)
+        .setPreference(AlignSingleLineCaseStatements, false)
+        .setPreference(CompactControlReadability, false)
+        .setPreference(CompactStringConcatenation, false)
+        .setPreference(DoubleIndentClassDeclaration, true)
+        .setPreference(FormatXml, true)
+        .setPreference(IndentLocalDefs, false)
+        .setPreference(IndentPackageBlocks, true)
+        .setPreference(IndentSpaces, 4)
+        .setPreference(IndentWithTabs, false)
+        .setPreference(MultilineScaladocCommentsStartOnFirstLine, false)
+        .setPreference(PreserveDanglingCloseParenthesis, false)
+        .setPreference(PlaceScaladocAsterisksBeneathSecondAsterisk, true)
+        .setPreference(PreserveSpaceBeforeArguments, false)
+        .setPreference(RewriteArrowSymbols, false)
+        .setPreference(SpaceBeforeColon, false)
+        .setPreference(SpaceInsideBrackets, false)
+        .setPreference(SpaceInsideParentheses, false)
+        .setPreference(SpacesWithinPatternBinders, true)
+  )
 
-
+    def scoverageSettings = instrumentSettings ++ Seq(
+        ScoverageKeys.highlighting := true
+    )
 }
