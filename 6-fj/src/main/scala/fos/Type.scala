@@ -36,7 +36,7 @@ object Type {
         }
         // T-FIELD
         case Select(obj, field) => {
-            val classDef = typeOfExpr(obj, ctx)
+            val classDef = lookupOrFail(typeOf(obj, ctx))
             classDef findField field match {
                 case None =>
                     throw TypeError(classDef.name + " does not contain field " + field)
@@ -45,24 +45,21 @@ object Type {
         }
         // T-INVK
         case Apply(obj, method, args) => {
-            val classDef = typeOfExpr(obj, ctx)
+            val classDef = lookupOrFail(typeOf(obj, ctx))
             val methodDef = classDef findMethod method getOrElse {
                 throw TypeError("method " + method + " is not defined in " + classDef.name)
             }
             methodDef checkTypeArguments (args map (typeOf(_, ctx)))
             methodDef.tpe
         }
+        // T-New
+        case New(cls, args) => {
+            val classDef = lookupOrFail(cls)
+            classDef checkTypeArguments (args map (typeOf(_, ctx)))
+            cls
+        }
         case _ => ???
         /* end of code added by Valerian */
-    }
-
-    //added by valerian
-    def typeOfExpr(expr: Expr, ctx: Context): ClassDef = {
-        val className = typeOf(expr, ctx)
-        lookup(className) match {
-            case None => throw TypeError("type " + className + " is not defined")
-            case Some(classDef) => classDef
-        }
     }
 
 }
@@ -103,6 +100,12 @@ object CT {
     def elements = ct iterator
 
     def lookup(classname: String): Option[ClassDef] = if (classname != null) ct get classname else None
+
+    // added by Valerian
+    def lookupOrFail(className: String): ClassDef = lookup(className) match {
+        case None => throw TypeError(className + " is not defined.")
+        case Some(classDef) => classDef
+    }
 
     def add(key: String, element: ClassDef): Unit = ct += key -> element
 
