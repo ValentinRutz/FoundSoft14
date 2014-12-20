@@ -135,6 +135,10 @@ case class ClassDef(name: String, superclass: String, fields: List[FieldDef], ct
 
   def superClass: Option[ClassDef] = CT lookup (this superclass)
 
+  /* added comment
+   * This function will go inside an infinite loop
+   * if ! this <: that and that is part of an inheritance loop
+   */
   def isSuperclassOf(that: Option[ClassDef]): Boolean =
     that match {
     case None => false
