@@ -58,6 +58,17 @@ object Type {
             classDef checkTypeArguments (args map (typeOf(_, ctx)))
             cls
         }
+        // T-[UDS]CAST
+        case Cast(cls, expr) => {
+            val classD = lookupOrFail(typeOf(expr, ctx))
+            val classC = lookupOrFail(cls)
+            if (classD isSubClassOf classC)
+                /* T-UCAST */ cls
+            else if (classC isSubClassOf classD)
+                /* T-DCAST */ cls // type error ?
+            else
+                /* T-SCAST */ cls // type error ?
+        }
         case _ => ???
         /* end of code added by Valerian */
     }
