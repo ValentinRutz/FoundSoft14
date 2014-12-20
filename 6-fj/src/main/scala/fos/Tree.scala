@@ -8,6 +8,7 @@ import scala.collection.immutable.{ Map, ListMap }
 
 import CT._
 import Utils._
+import scala.language.postfixOps
 
 abstract class TreeException(msg: String) extends Exception
 
@@ -28,6 +29,7 @@ sealed abstract class Tree extends Positional
 
 case class Program(cls: List[ClassDef], expr: Expr) extends Tree {
     cls.foreach(c => CT.add(c.name, c));
+    CT.checkInheritanceLoop
 }
 case class ClassDef(name: String, superclass: String, fields: List[FieldDef], ctor: CtrDef, methods: List[MethodDef]) extends Tree {
     private def fieldLookup: List[FieldDef] = {
