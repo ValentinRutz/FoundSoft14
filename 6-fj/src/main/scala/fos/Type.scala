@@ -11,17 +11,51 @@ object Type {
     import Utils._
 
     type Class = String
-    type Context = List[Pair[Class, String]]
+    type Context = scala.collection.immutable.Map[String, Class]
 
     //added by Valerian
     val OK: Class = "OK"
+    /* the result ok is required when typechecking classes. This is the
+   * produced result when no problem occured in class typechecking.
+   * (see notation used in reference paper) */
 
     def typeOf(tree: Tree, ctx: Context): Class = tree match {
         //   ... To complete ...
         /* code added by Valerian */
+        // this case should not occur (see eval method in FJ.scala
+        case Program(cls, expr) => {
+            cls foreach { typeOf(_, ctx) }
+            typeOf(expr, ctx)
+        }
+        // the cases are treated in order given by reference paper
+
+        // T-VAR
+        case Var(name) => ctx.get(name) match {
+            case None => throw TypeError("variable " + name + " is not defined.")
+            case Some(typ) => typ
+        }
+        // T-FIELD
+        case Select(obj, field) => {
+            val className = typeOf(obj, ctx)
+            val classDef = lookup(className) match {
+                case None =>
+                    throw TypeError("type " + className + " is not defined")
+                case Some(c) => c
+            }
+            classDef findField field match {
+                case None =>
+                    throw TypeError(classDef.name + " does not contain field " + field)
+                case Some(FieldDef(tpe, name)) => tpe
+            }
+        }
+        // T-INVK
+        case Apply(obj, method, args) => {
+            ???
+        }
         case _ => ???
         /* end of code added by Valerian */
     }
+
 }
 
 case class EvaluationException(msg: String) extends Exception
