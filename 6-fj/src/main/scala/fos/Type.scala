@@ -49,7 +49,8 @@ object Type {
             val methodDef = classDef findMethod method getOrElse {
                 throw TypeError("method " + method + " is not defined in " + classDef.name)
             }
-            ???
+            methodDef checkTypeArguments (args map (typeOf(_, ctx)))
+            methodDef.tpe
         }
         case _ => ???
         /* end of code added by Valerian */
