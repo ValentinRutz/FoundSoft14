@@ -1,6 +1,7 @@
 package fos
 
 import scala.collection.mutable.{ Map, HashMap };
+import scala.language.postfixOps
 
 case class TypeError(msg: String) extends Exception(msg)
 
@@ -12,8 +13,15 @@ object Type {
     type Class = String
     type Context = List[Pair[Class, String]]
 
-    def typeOf(tree: Tree, ctx: Context): Class = ???
-    //   ... To complete ... 
+    //added by Valerian
+    val OK: Class = "OK"
+
+    def typeOf(tree: Tree, ctx: Context): Class = tree match {
+        //   ... To complete ...
+        /* code added by Valerian */
+        case _ => ???
+        /* end of code added by Valerian */
+    }
 }
 
 case class EvaluationException(msg: String) extends Exception
