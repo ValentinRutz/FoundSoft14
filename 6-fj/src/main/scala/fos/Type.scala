@@ -77,11 +77,13 @@ object Type {
         container.overrideMethod(tpe, name, args, body)
     }
 
+    // T-CLASS
     def typeOf(classDef: ClassDef): Unit = {
         val ClassDef(name, superclass, fields, ctor, methods) = classDef
-
+        classDef.checkFields
+        classDef.verifyConstructorArgs
+        for (m <- classDef.methods) typeOf(m, classDef)
     }
-
 }
 
 case class EvaluationException(msg: String) extends Exception

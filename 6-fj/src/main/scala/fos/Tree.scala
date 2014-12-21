@@ -35,6 +35,7 @@ case class ClassDef(name: String, superclass: String, fields: List[FieldDef], ct
     private def fieldLookup: List[FieldDef] = {
         CT lookup superclass match {
             case None => fields
+            // order is important do not modify (Valerian)
             case Some(s) => s.fieldLookup ::: fields
         }
     }
@@ -137,7 +138,7 @@ case class ClassDef(name: String, superclass: String, fields: List[FieldDef], ct
 
     def superClass: Option[ClassDef] = CT lookup (this superclass)
 
-    /* added comment
+    /* added comment (Valerian)
    * This function will go inside an infinite loop
    * if ! this <: that and that is part of an inheritance loop
    */
