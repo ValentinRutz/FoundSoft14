@@ -13,16 +13,6 @@ object Type {
     type Class = String
     type Context = scala.collection.immutable.Map[String, Class]
 
-    //added by Valerian
-    val OK: Class = "OK"
-    //added by Valerian
-    def OK(cName: String): Class = "OK IN " + cName
-    // added by Valerian
-    def OK(cDef: ClassDef): Class = OK(cDef.name)
-    /* the result ok is required when typechecking classes. This is the
-   * produced result when no problem occured in class typechecking.
-   * (see notation used in reference paper) */
-
     /*
     * Original signature of typeOf
     * Replaced by multiple overloaded version to implement easily different
@@ -43,7 +33,7 @@ object Type {
         }
         // T-FIELD
         case Select(obj, field) => {
-            val classDef = lookupOrFail(typeOf(obj, ctx))
+            val classDef = getClassDef(typeOf(obj, ctx))
             classDef findField field match {
                 case None =>
                     throw TypeError(classDef.name + " does not contain field " + field)
@@ -52,7 +42,7 @@ object Type {
         }
         // T-INVK
         case Apply(obj, method, args) => {
-            val classDef = lookupOrFail(typeOf(obj, ctx))
+            val classDef = getClassDef(typeOf(obj, ctx))
             val methodDef = classDef findMethod method getOrElse {
                 throw TypeError("method " + method + " is not defined in " + classDef.name)
             }
@@ -61,14 +51,14 @@ object Type {
         }
         // T-New
         case New(cls, args) => {
-            val classDef = lookupOrFail(cls)
+            val classDef = getClassDef(cls)
             classDef checkTypeArguments (args map (typeOf(_, ctx)))
             cls
         }
         // T-[UDS]CAST
         case Cast(cls, expr) => {
-            val classD = lookupOrFail(typeOf(expr, ctx))
-            val classC = lookupOrFail(cls)
+            val classD = getClassDef(typeOf(expr, ctx))
+            val classC = getClassDef(cls)
             if (classD isSubClassOf classC)
                 /* T-UCAST */ cls
             else if (classC isSubClassOf classD)
@@ -81,13 +71,16 @@ object Type {
     def typeOf(method: MethodDef, container: ClassDef): Unit = {
         val MethodDef(tpe, name, args, body) = method
         val newCtx = (args map { _.asTuple } toMap) + (("this", container.name))
-        val bodyType = lookupOrFail(typeOf(body, newCtx))
+        val bodyType = getClassDef(typeOf(body, newCtx))
         if (!(bodyType isSubClassOf tpe)) throw TypeError(
             "Type mismatch: found: " + bodyType.name + " expected: " + tpe)
         container.overrideMethod(tpe, name, args, body)
     }
 
-    def typeOf(classDef: ClassDef, ctx: Context): Unit = ???
+    def typeOf(classDef: ClassDef): Unit = {
+        val ClassDef(name, superclass, fields, ctor, methods) = classDef
+
+    }
 
 }
 
@@ -127,12 +120,6 @@ object CT {
     def elements = ct iterator
 
     def lookup(classname: String): Option[ClassDef] = if (classname != null) ct get classname else None
-
-    // added by Valerian
-    def lookupOrFail(className: String): ClassDef = lookup(className) match {
-        case None => throw TypeError(className + " is not defined.")
-        case Some(classDef) => classDef
-    }
 
     def add(key: String, element: ClassDef): Unit = ct += key -> element
 

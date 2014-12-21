@@ -153,7 +153,7 @@ object FJ extends StandardTokenParsers {
         t match {
             case Program(cls, expr) =>
                 try {
-                    cls foreach (cl => typeOf(cl, Map.empty[String, String]))
+                    cls foreach (cl => typeOf(cl /*, Map.empty[String, String]*/ ))
                     val typeExpr = typeOf(expr, Map.empty[String, String])
                     println("TYPE EXPR: " + typeExpr) //; expr
                     val evExpr = Evaluate(expr)
