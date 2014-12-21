@@ -160,6 +160,9 @@ case class ClassDef(name: String, superclass: String, fields: List[FieldDef], ct
 
 case class FieldDef(tpe: String, name: String) extends Tree {
     override def toString = tpe + " " + name
+
+    // added by Valerian
+    def asTuple: (String, String) = (name, tpe)
 }
 
 case class CtrDef(name: String, args: List[FieldDef], supers: List[Var], body: List[Assign]) extends Tree

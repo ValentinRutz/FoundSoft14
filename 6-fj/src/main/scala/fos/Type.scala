@@ -15,18 +15,25 @@ object Type {
 
     //added by Valerian
     val OK: Class = "OK"
+    //added by Valerian
+    def OK(cName: String): Class = "OK IN " + cName
+    // added by Valerian
+    def OK(cDef: ClassDef): Class = OK(cDef.name)
     /* the result ok is required when typechecking classes. This is the
    * produced result when no problem occured in class typechecking.
    * (see notation used in reference paper) */
 
-    def typeOf(tree: Tree, ctx: Context): Class = tree match {
+    /*
+    * Original signature of typeOf
+    * Replaced by multiple overloaded version to implement easily different
+    * behaviours.
+    * 
+    def typeOf(tree: Tree, ctx: Context): Class = ???
         //   ... To complete ...
-        /* code added by Valerian */
-        // this case should not occur (see eval method in FJ.scala
-        case Program(cls, expr) => {
-            cls foreach { typeOf(_, ctx) }
-            typeOf(expr, ctx)
-        }
+    */
+
+    // added by Valerian
+    def typeOf(expr: Expr, ctx: Context): String = expr match {
         // the cases are treated in order given by reference paper
 
         // T-VAR
@@ -69,9 +76,18 @@ object Type {
             else
                 /* T-SCAST */ cls // type error ?
         }
-        case _ => ???
-        /* end of code added by Valerian */
     }
+    // T-METHOD
+    def typeOf(method: MethodDef, container: ClassDef): Unit = {
+        val MethodDef(tpe, name, args, body) = method
+        val newCtx = (args map { _.asTuple } toMap) + (("this", container.name))
+        val bodyType = lookupOrFail(typeOf(body, newCtx))
+        if (!(bodyType isSubClassOf tpe)) throw TypeError(
+            "Type mismatch: found: " + bodyType.name + " expected: " + tpe)
+        container.overrideMethod(tpe, name, args, body)
+    }
+
+    def typeOf(classDef: ClassDef, ctx: Context): Unit = ???
 
 }
 
