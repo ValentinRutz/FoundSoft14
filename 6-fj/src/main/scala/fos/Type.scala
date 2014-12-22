@@ -98,9 +98,15 @@ object Evaluate extends (Expr => Expr) {
         // Computation
 
         // R-FIELD
+        /* No call by value here, as only one arg will be used only once */
         case Select(New(cls, args), field) =>
             args(getClassDef(cls) indexOfField field)
+
         // R-INVK
+        /* to make method application more efficient 
+         * Call by value on argument list
+         * No call by value on object creation (no all fields necessary evaluated)
+         */
         case Apply(cExpr @ New(cls, cArgs), method, Values(mArgs)) => {
             val MethodDef(_, _, args, body) =
                 getClassDef(cls) findMethod method getOrElse {
@@ -109,6 +115,7 @@ object Evaluate extends (Expr => Expr) {
             substituteInBody(body, cExpr, args zip mArgs)
         }
         // R-CAST
+        /* No call by value, cast simply removed */
         case Cast(cls, e @ New(nCls, args)) => e
 
         // Congruence
@@ -117,7 +124,8 @@ object Evaluate extends (Expr => Expr) {
         case Select(obj, field) => Select(apply(obj), field)
 
         // RC-INVK-ARG
-        case Apply(o @ Value(obj), method, SplitVals(vals, a :: args)) =>
+        /* evaluate method arguments in left to right order */
+        case Apply(o @ New(cls, cArgs), method, SplitVals(vals, a :: args)) =>
             Apply(o, method, vals ::: (apply(a) :: args))
         // RC-INVK-RECV
         case Apply(obj, method, args) => Apply(apply(obj), method, args)
@@ -127,8 +135,7 @@ object Evaluate extends (Expr => Expr) {
             New(cls, vals ::: (apply(a) :: args))
 
         // RC-CAST
-        case Cast(cls, e) => ???
-        case _ => ???
+        case Cast(cls, e) => Cast(cls, apply(e))
 
         // end of code added
     }
