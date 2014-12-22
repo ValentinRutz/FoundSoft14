@@ -116,7 +116,8 @@ object Evaluate extends (Expr => Expr) {
         // RC-FIELD
         case Select(obj, field) => Select(apply(obj), field)
         // RC-INVK-ARG
-
+        case Apply(o @ Value(obj), method, SplitVals(vals, a :: args)) =>
+            Apply(o, method, vals ::: (apply(a) :: args))
         // RC-INVK-RECV
         case Apply(obj, method, args) => Apply(apply(obj), method, args)
         case _ => ???
@@ -161,22 +162,17 @@ object CT {
         add(objectClass, objectClassDef)
     }
 
-    /*-------------------------------------------------------*/
-    // Code added by Valerian
-
+    // added by Valerian
     def firstInheritanceLoop: Option[ClassDef] = ct.values find { classDef =>
         classDef isSuperclassOf classDef.superClass
     }
 
+    // added by Valerian
     def checkInheritanceLoop: Unit = firstInheritanceLoop match {
         case None => ()
         case Some(classDef) =>
             throw new ClassHierarchyException(classDef.name + "is part of an inheritance loop")
     }
-
-    // end of code added by Valerian
-    /*--------------------------------------------------------*/
-
 }
 
 object Utils {
@@ -187,15 +183,25 @@ object Utils {
     }
 
     // added by Valerian
+    def isValue(expr: Expr): Boolean = expr match {
+        case Var(_) => true
+        case New(_, args) => args forall { isValue(_) }
+        case _ => false
+    }
+
+    // TODO discuss correctness of isValue
+
+    // added by Valerian
     object Value {
-        // TODO discuss correctness of isValue
-        private def isValue(expr: Expr): Boolean = expr match {
-            case Var(_) => true
-            case New(_, args) => args forall { isValue(_) }
-            case _ => false
-        }
         def unapply(expr: Expr): Option[Expr] =
             if (isValue(expr)) Some(expr)
             else None
+    }
+
+    // added by Valerian
+    object SplitVals {
+        def unapply(exprs: List[Expr]): Option[(List[Expr], List[Expr])] =
+            if (exprs.isEmpty) None
+            else Some(exprs span (isValue(_)))
     }
 }
