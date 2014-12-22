@@ -111,6 +111,14 @@ object Evaluate extends (Expr => Expr) {
         // R-CAST
         case Cast(cls, e @ New(nCls, args)) => e
 
+        // Congruence
+
+        // RC-FIELD
+        case Select(obj, field) => Select(apply(obj), field)
+        // RC-INVK-ARG
+
+        // RC-INVK-RECV
+        case Apply(obj, method, args) => Apply(apply(obj), method, args)
         case _ => ???
 
         // end of code added
@@ -176,5 +184,18 @@ object Utils {
     def getClassDef(className: String): ClassDef = CT lookup className match {
         case None => throw new TypeError("class " + className + " not declared")
         case Some(c: ClassDef) => c
+    }
+
+    // added by Valerian
+    object Value {
+        // TODO discuss correctness of isValue
+        private def isValue(expr: Expr): Boolean = expr match {
+            case Var(_) => true
+            case New(_, args) => args forall { isValue(_) }
+            case _ => false
+        }
+        def unapply(expr: Expr): Option[Expr] =
+            if (isValue(expr)) Some(expr)
+            else None
     }
 }
