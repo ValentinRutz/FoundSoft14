@@ -59,12 +59,11 @@ object Type {
         case Cast(cls, expr) => {
             val classD = getClassDef(typeOf(expr, ctx))
             val classC = getClassDef(cls)
-            if (classD isSubClassOf classC)
-                /* T-UCAST */ cls
-            else if (classC isSubClassOf classD)
-                /* T-DCAST */ cls // type error ?
-            else
-                /* T-SCAST */ cls // type error ?
+            if (classD isSubClassOf classC) /* T-UCAST */ cls
+            else if (classC isSubClassOf classD) /* T-DCAST */
+                throw TypeError(s"Down cast ($classC)$classD is not allowed")
+            else /* T-SCAST */
+                throw TypeError(s"Stupid cast ($classC)$classD is not allowed")
         }
     }
     // T-METHOD
