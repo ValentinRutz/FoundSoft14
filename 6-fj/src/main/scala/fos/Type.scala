@@ -101,7 +101,7 @@ object Evaluate extends (Expr => Expr) {
         case Select(New(cls, args), field) =>
             args(getClassDef(cls) indexOfField field)
         // R-INVK
-        case Apply(cExpr @ New(cls, cArgs), method, mArgs) => {
+        case Apply(cExpr @ New(cls, cArgs), method, Values(mArgs)) => {
             val MethodDef(_, _, args, body) =
                 getClassDef(cls) findMethod method getOrElse {
                     throw new Exception(s"Error 'method $method not found in class $cls ' was not thrown by typeOf")
@@ -115,11 +115,19 @@ object Evaluate extends (Expr => Expr) {
 
         // RC-FIELD
         case Select(obj, field) => Select(apply(obj), field)
+
         // RC-INVK-ARG
         case Apply(o @ Value(obj), method, SplitVals(vals, a :: args)) =>
             Apply(o, method, vals ::: (apply(a) :: args))
         // RC-INVK-RECV
         case Apply(obj, method, args) => Apply(apply(obj), method, args)
+
+        // RC-NEW-ARG
+        case New(cls, SplitVals(vals, a :: args)) =>
+            New(cls, vals ::: (apply(a) :: args))
+
+        // RC-CAST
+        case Cast(cls, e) => ???
         case _ => ???
 
         // end of code added
@@ -205,5 +213,13 @@ object Utils {
                 case (Nil, _) => None
                 case es => Some(es)
             }
+    }
+
+    // added by Valerian
+    object Values {
+        def unapply(exprs: List[Expr]): Option[List[Expr]] = exprs match {
+            case SplitVals(es, Nil) => Some(es)
+            case _ => None
+        }
     }
 }
