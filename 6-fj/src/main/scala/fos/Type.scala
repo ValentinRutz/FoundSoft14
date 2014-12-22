@@ -49,7 +49,7 @@ object Type {
             methodDef checkTypeArguments (args map (typeOf(_, ctx)))
             methodDef.tpe
         }
-        // T-New
+        // T-NEW
         case New(cls, args) => {
             val classDef = getClassDef(cls)
             classDef checkTypeArguments (args map (typeOf(_, ctx)))
@@ -92,8 +92,30 @@ object Evaluate extends (Expr => Expr) {
 
     import Utils._
 
-    def apply(expr: Expr): Expr = ???
-    //   ... To complete ... 
+    def apply(expr: Expr): Expr = expr match {
+        //   ... To complete ... 
+        // begin of code added
+
+        // Computation
+
+        // R-FIELD
+        case Select(New(cls, args), field) =>
+            args(getClassDef(cls) indexOfField field)
+        // R-INVK
+        case Apply(cExpr @ New(cls, cArgs), method, mArgs) => {
+            val MethodDef(_, _, args, body) =
+                getClassDef(cls) findMethod method getOrElse {
+                    throw new Exception(s"Error 'method $method not found in class $cls ' was not thrown by typeOf")
+                }
+            substituteInBody(body, cExpr, args zip mArgs)
+        }
+        // R-CAST
+        case Cast(cls, e @ New(nCls, args)) => e
+
+        case _ => ???
+
+        // end of code added
+    }
 
     def substituteInBody(exp: Expr, thiss: New, substs: List[(FieldDef, Expr)]): Expr = exp match {
         case Select(obj: Expr, field: String) => Select(substituteInBody(obj, thiss, substs), field)

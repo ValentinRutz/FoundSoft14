@@ -44,6 +44,10 @@ case class ClassDef(name: String, superclass: String, fields: List[FieldDef], ct
 
     def findField(fieldName: String): Option[FieldDef] = fieldLookup find (f => f.name == fieldName)
 
+    // added by Valerian
+    def indexOfField(fieldName: String): Int =
+        fieldLookup indexOf findField(fieldName)
+
     def checkFields: Unit = checkListFieldsDef(fieldLookup)
 
     /**
