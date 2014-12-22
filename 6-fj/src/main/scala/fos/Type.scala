@@ -201,7 +201,9 @@ object Utils {
     // added by Valerian
     object SplitVals {
         def unapply(exprs: List[Expr]): Option[(List[Expr], List[Expr])] =
-            if (exprs.isEmpty) None
-            else Some(exprs span (isValue(_)))
+            exprs span (isValue(_)) match {
+                case (Nil, _) => None
+                case es => Some(es)
+            }
     }
 }
