@@ -1,14 +1,16 @@
 package fos
 
+import scala.util.parsing.input._
 import scala.collection.mutable.{ Map, HashMap };
 import scala.language.postfixOps
 
-case class TypeError(msg: String) extends Exception(msg)
+case class TypeError(pos: Position, msg: String) extends Exception(msg) {
+    override def toString = msg + "\n" + pos.longString
+}
 
 object Type {
 
     import CT._
-    import Utils._
 
     type Class = String
     type Context = scala.collection.immutable.Map[String, Class]
@@ -28,37 +30,38 @@ object Type {
 
         // T-VAR
         case Var(name) => ctx.get(name) match {
-            case None => throw TypeError("variable " + name + " is not defined.")
+            case None => throw TypeError(expr.pos, "variable " + name + " is not defined.")
             case Some(typ) => typ
         }
         // T-FIELD
         case Select(obj, field) => {
-            val classDef = getClassDef(typeOf(obj, ctx))
+            val classDef = CT.lookup(typeOf(obj, ctx)).getOrElse(throw new TypeError(expr.pos, "Class not found"))
             classDef findField field match {
                 case None =>
-                    throw TypeError(classDef.name + " does not contain field " + field)
+                    throw TypeError(expr.pos, classDef.name + " does not contain field " + field)
                 case Some(FieldDef(tpe, name)) => tpe
             }
         }
         // T-INVK
         case Apply(obj, method, args) => {
-            val classDef = getClassDef(typeOf(obj, ctx))
+            val classDef = CT.lookup(typeOf(obj, ctx)).getOrElse(throw new TypeError(expr.pos, "Class not found"))
             val methodDef = classDef findMethod method getOrElse {
-                throw TypeError("method " + method + " is not defined in " + classDef.name)
+                throw TypeError(expr.pos, "method " + method + " is not defined in " + classDef.name)
             }
             methodDef checkTypeArguments (args map (typeOf(_, ctx)))
             methodDef.tpe
         }
         // T-NEW
         case New(cls, args) => {
-            val classDef = getClassDef(cls)
+            val classDef = CT.lookup(cls).getOrElse(throw new TypeError(expr.pos, "Class not found"))
             classDef checkTypeArguments (args map (typeOf(_, ctx)))
             cls
         }
         // T-[UDS]CAST
         case Cast(cls, expr) => {
-            val classD = getClassDef(typeOf(expr, ctx))
-            val classC = getClassDef(cls)
+            val classD = CT.lookup(typeOf(expr, ctx)).getOrElse(throw new TypeError(expr.pos, "Class not found"))
+            val classC = CT.lookup(cls).getOrElse(throw new TypeError(expr.pos,
+                "Class not found"))
             if (classD isSubClassOf classC) {
                 /* T-UCAST */
                 cls
@@ -76,8 +79,8 @@ object Type {
     def typeOf(method: MethodDef, container: ClassDef): Unit = {
         val MethodDef(tpe, name, args, body) = method
         val newCtx = (args map { _.asTuple } toMap) + (("this", container.name))
-        val bodyType = getClassDef(typeOf(body, newCtx))
-        if (!(bodyType isSubClassOf tpe)) throw TypeError(
+        val bodyType = CT.lookup(typeOf(body, newCtx)).getOrElse(throw new TypeError(method.pos, "Class not found"))
+        if (!(bodyType isSubClassOf tpe)) throw TypeError(method.pos,
             "Type mismatch: found: " + bodyType.name + " expected: " + tpe)
         container.overrideMethod(tpe, name, args, body)
     }
@@ -212,7 +215,7 @@ object CT {
 object Utils {
 
     def getClassDef(className: String): ClassDef = CT lookup className match {
-        case None => throw new TypeError("class " + className + " not declared")
+        case None => throw new EvaluationException("class " + className + " not declared")
         case Some(c: ClassDef) => c
     }
 

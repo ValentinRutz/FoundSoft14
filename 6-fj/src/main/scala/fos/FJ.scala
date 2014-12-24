@@ -160,11 +160,6 @@ object FJ extends StandardTokenParsers {
                     print("EVALUATE TO: ")
                     evExpr
                 } catch {
-                    case TypeError(msg) =>
-                        println("Type Error: " + msg)
-                        print("The expression will not be evaluated. Expr: ")
-                        CT.clear
-                        expr
                     case EvaluationException(msg) =>
                         println("The expression generate an exception in Java: " + msg)
                         CT.clear
