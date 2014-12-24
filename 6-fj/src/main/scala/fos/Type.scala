@@ -115,7 +115,6 @@ object Evaluate extends (Expr => Expr) {
                 getClassDef(cls) findMethod method getOrElse {
                     throw new Exception(s"Error 'method $method not found in class $cls ' was not thrown by typeOf")
                 }
-            System.out.println(" Called invoke");
             substituteInBody(body, cExpr, args zip mArgs)
         }
         // R-CAST

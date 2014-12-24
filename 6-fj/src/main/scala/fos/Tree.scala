@@ -32,21 +32,15 @@ case class Program(cls: List[ClassDef], expr: Expr) extends Tree {
     CT.checkInheritanceLoop
 }
 case class ClassDef(name: String, superclass: String, fields: List[FieldDef], ctor: CtrDef, methods: List[MethodDef]) extends Tree {
-    private def fieldLookup: List[FieldDef] = {
-        CT lookup superclass match {
-            case None => fields
-            // order is important do not modify (Valerian)
-            case Some(s) => s.fieldLookup ::: fields
-        }
-    }
 
-    def getFieldsSuperclass: List[FieldDef] = getClassDef(superclass) fieldLookup
+    private def fieldLookup: List[FieldDef] = getFieldsSuperclass ::: fields
+
+    def getFieldsSuperclass: List[FieldDef] = CT.lookup(superclass).toList.flatMap(_.fieldLookup)
 
     def findField(fieldName: String): Option[FieldDef] = fieldLookup find (f => f.name == fieldName)
 
     // added by Valerian
-    def indexOfField(fieldName: String): Int =
-        fieldLookup indexOf findField(fieldName)
+    def indexOfField(fieldName: String): Int = fieldLookup.indexWhere(_.name == fieldName)
 
     def checkFields: Unit = checkListFieldsDef(fieldLookup)
 

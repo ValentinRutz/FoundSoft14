@@ -23,8 +23,7 @@ class TestMain extends FunSuite with Matchers {
             result should equal(output)
         }
 
-    inputOutput("Example1 from lab statement") {
-        """
+    val baseProgram = """
         class A extends Object {
             A() { super(); }
         } 
@@ -43,13 +42,21 @@ class TestMain extends FunSuite with Matchers {
                 return new Pair(newfst, this.snd);
             }
         }
-
-        new Pair(new A(), new B()).setfst(new B())
         """
+
+    inputOutput("Simple example from pdf") {
+        baseProgram + "new Pair(new A(), new B()).setfst(new B())"
     } {
         """TYPE EXPR: Pair
           |EVALUATE TO: new Pair(new B(), new B())""".stripMargin
     }
+
+    //    inputOutput("Simple cast example from pdf") {
+    //        baseProgram + "((Pair)new Pair(new Pair(new A(), new B()), new A()).fst).snd"
+    //    } {
+    //        """TYPE EXPR: Pair
+    //          |EVALUATE TO: new B()""".stripMargin
+    //    }
 
     /** Executes a block of code and redirects all the console output into a string */
     def consoleToString(block: => Unit): String = {
