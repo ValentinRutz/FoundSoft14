@@ -95,7 +95,7 @@ object Evaluate extends (Expr => Expr) {
 
     def eval(expr: Expr): Expr = {
         /* At this point we consider that expr has correctly type checked */
-        Stream.iterate(expr)(reduce).map { e => System.out.println(s"Reducing $e"); e }.dropWhile(e => !isValue(e)).head
+        Stream.iterate(expr)(reduce).dropWhile(e => !isValue(e)).head
     }
 
     def reduce(expr: Expr): Expr = expr match {
