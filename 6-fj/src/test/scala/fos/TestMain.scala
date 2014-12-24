@@ -51,12 +51,12 @@ class TestMain extends FunSuite with Matchers {
           |EVALUATE TO: new Pair(new B(), new B())""".stripMargin
     }
 
-    //    inputOutput("Simple cast example from pdf") {
-    //        baseProgram + "((Pair)new Pair(new Pair(new A(), new B()), new A()).fst).snd"
-    //    } {
-    //        """TYPE EXPR: Pair
-    //          |EVALUATE TO: new B()""".stripMargin
-    //    }
+    inputOutput("Simple cast example from pdf") {
+        baseProgram + "(B) ((Pair)new Pair(new Pair(new A(), new B()), new A()).fst).snd"
+    } {
+        """TYPE EXPR: B
+              |EVALUATE TO: new B()""".stripMargin
+    }
 
     /** Executes a block of code and redirects all the console output into a string */
     def consoleToString(block: => Unit): String = {

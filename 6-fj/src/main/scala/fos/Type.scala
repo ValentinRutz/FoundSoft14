@@ -59,11 +59,17 @@ object Type {
         case Cast(cls, expr) => {
             val classD = getClassDef(typeOf(expr, ctx))
             val classC = getClassDef(cls)
-            if (classD isSubClassOf classC) /* T-UCAST */ cls
-            else if (classC isSubClassOf classD) /* T-DCAST */
-                throw TypeError(s"Down cast ($classC)$classD is not allowed")
-            else /* T-SCAST */
-                throw TypeError(s"Stupid cast ($classC)$classD is not allowed")
+            if (classD isSubClassOf classC) {
+                /* T-UCAST */
+                cls
+            } else if (classC isSubClassOf classD) {
+                /* T-DCAST */
+                cls
+            } else {
+                /* T-SCAST */
+                Console.err.println(s"Warning: You are trying to do a stupid cast from ${classD.name} to $cls")
+                cls
+            }
         }
     }
     // T-METHOD
@@ -113,13 +119,20 @@ object Evaluate extends (Expr => Expr) {
         case Apply(cExpr @ New(cls, cArgs), method, Values(mArgs)) => {
             val MethodDef(_, _, args, body) =
                 getClassDef(cls) findMethod method getOrElse {
-                    throw new Exception(s"Error 'method $method not found in class $cls ' was not thrown by typeOf")
+                    throw new EvaluationException(s"Error 'method $method not found in class $cls ' was not thrown by typeOf")
                 }
             substituteInBody(body, cExpr, args zip mArgs)
         }
         // R-CAST
         /* No call by value, cast simply removed */
-        case Cast(cls, e @ New(nCls, args)) => e
+        case Cast(cls, e @ New(nCls, args)) =>
+            val D = getClassDef(cls)
+            val C = getClassDef(nCls)
+            if (C.isSubClassOf(D)) {
+                e
+            } else {
+                throw new EvaluationException(s"ClassCastException, cannot cast $nCls into $cls")
+            }
 
         // Congruence
 
