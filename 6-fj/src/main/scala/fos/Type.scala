@@ -101,7 +101,9 @@ object Evaluate extends (Expr => Expr) {
 
     def eval(expr: Expr): Expr = {
         /* At this point we consider that expr has correctly type checked */
-        Stream.iterate(expr)(reduce).dropWhile(e => !isValue(e)).head
+        val (steps, result) = Stream.iterate(expr)(reduce).span(e => !isValue(e))
+        if (!steps.isEmpty) steps.tail.foreach(expr => println(s"REDUCE TO: $expr"))
+        result.head
     }
 
     def reduce(expr: Expr): Expr = expr match {

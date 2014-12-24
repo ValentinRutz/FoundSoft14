@@ -197,7 +197,7 @@ case class New(cls: String, args: List[Expr]) extends Expr {
     override def toString = "new " + cls + "" + args.mkString("(", ", ", ")")
 }
 case class Cast(cls: String, e: Expr) extends Expr {
-    override def toString = "( (" + cls + ")" + e + ")"
+    override def toString = "((" + cls + ")" + e + ")"
 }
 case class Select(obj: Expr, field: String) extends Expr {
     override def toString = obj + "." + field

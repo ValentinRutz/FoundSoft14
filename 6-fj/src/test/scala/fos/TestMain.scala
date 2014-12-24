@@ -48,14 +48,17 @@ class TestMain extends FunSuite with Matchers {
         baseProgram + "new Pair(new A(), new B()).setfst(new B())"
     } {
         """TYPE EXPR: Pair
+          |REDUCE TO: new Pair(new B(), new Pair(new A(), new B()).snd)
           |EVALUATE TO: new Pair(new B(), new B())""".stripMargin
     }
 
     inputOutput("Simple cast example from pdf") {
-        baseProgram + "(B) ((Pair)new Pair(new Pair(new A(), new B()), new A()).fst).snd"
+        baseProgram + "((Pair)new Pair(new Pair(new A(), new B()), new A()).fst).snd"
     } {
-        """TYPE EXPR: B
-              |EVALUATE TO: new B()""".stripMargin
+        """TYPE EXPR: Object
+          |REDUCE TO: ((Pair)new Pair(new A(), new B())).snd
+          |REDUCE TO: new Pair(new A(), new B()).snd
+          |EVALUATE TO: new B()""".stripMargin
     }
 
     /** Executes a block of code and redirects all the console output into a string */
