@@ -200,7 +200,7 @@ case class Var(name: String) extends Expr {
     override def toString = name
 }
 case class New(cls: String, args: List[Expr]) extends Expr {
-    override def toString = "new " + cls + "" + args.mkString("(", ",", ")")
+    override def toString = "new " + cls + "" + args.mkString("(", ", ", ")")
 }
 case class Cast(cls: String, e: Expr) extends Expr {
     override def toString = "( (" + cls + ")" + e + ")"
