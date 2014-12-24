@@ -91,11 +91,14 @@ object Evaluate extends (Expr => Expr) {
 
     import Utils._
 
-    def apply(expr: Expr): Expr = expr match {
-        //   ... To complete ... 
-        // begin of code added
+    def apply(expr: Expr) = eval(expr)
 
-        // Computation
+    def eval(expr: Expr): Expr = {
+        /* At this point we consider that expr has correctly type checked */
+        Stream.iterate(expr)(reduce).map { e => System.out.println(s"Reducing $e"); e }.dropWhile(e => !isValue(e)).head
+    }
+
+    def reduce(expr: Expr): Expr = expr match {
 
         // R-FIELD
         /* No call by value here, as only one arg will be used only once */
@@ -112,6 +115,7 @@ object Evaluate extends (Expr => Expr) {
                 getClassDef(cls) findMethod method getOrElse {
                     throw new Exception(s"Error 'method $method not found in class $cls ' was not thrown by typeOf")
                 }
+            System.out.println(" Called invoke");
             substituteInBody(body, cExpr, args zip mArgs)
         }
         // R-CAST
@@ -121,23 +125,24 @@ object Evaluate extends (Expr => Expr) {
         // Congruence
 
         // RC-FIELD
-        case Select(obj, field) => Select(apply(obj), field)
+        case Select(obj, field) => Select(reduce(obj), field)
 
         // RC-INVK-ARG
         /* evaluate method arguments in left to right order */
-        case Apply(o @ New(cls, cArgs), method, SplitVals(vals, a :: args)) =>
-            Apply(o, method, vals ::: (apply(a) :: args))
+        case Apply(o @ New(cls, cArgs), method, mArgs) =>
+            val (vals, arg :: rest) = splitVals(mArgs)
+            Apply(o, method, vals ::: (reduce(arg) :: rest))
+
         // RC-INVK-RECV
-        case Apply(obj, method, args) => Apply(apply(obj), method, args)
+        case Apply(obj, method, args) => Apply(reduce(obj), method, args)
 
         // RC-NEW-ARG
-        case New(cls, SplitVals(vals, a :: args)) =>
-            New(cls, vals ::: (apply(a) :: args))
+        case New(cls, cArgs) =>
+            val (vals, arg :: rest) = splitVals(cArgs)
+            New(cls, vals ::: (reduce(arg) :: rest))
 
         // RC-CAST
-        case Cast(cls, e) => Cast(cls, apply(e))
-
-        // end of code added
+        case Cast(cls, e) => Cast(cls, reduce(e))
     }
 
     def substituteInBody(exp: Expr, thiss: New, substs: List[(FieldDef, Expr)]): Expr = exp match {
@@ -204,6 +209,8 @@ object Utils {
         case _ => false
     }
 
+    def splitVals(exprs: List[Expr]): (List[Expr], List[Expr]) = exprs span isValue
+
     // TODO discuss correctness of isValue
 
     // added by Valerian
@@ -214,19 +221,9 @@ object Utils {
     }
 
     // added by Valerian
-    object SplitVals {
-        def unapply(exprs: List[Expr]): Option[(List[Expr], List[Expr])] =
-            exprs span (isValue(_)) match {
-                case (Nil, _) => None
-                case es => Some(es)
-            }
-    }
-
-    // added by Valerian
     object Values {
-        def unapply(exprs: List[Expr]): Option[List[Expr]] = exprs match {
-            case SplitVals(es, Nil) => Some(es)
-            case _ => None
-        }
+        def unapply(exprs: List[Expr]): Option[List[Expr]] =
+            if (exprs forall isValue) Some(exprs)
+            else None
     }
 }
